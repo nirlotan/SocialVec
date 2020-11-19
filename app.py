@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import numpy as np
+import sys
 
 from gensim.test.utils import common_texts, get_tmpfile
 from gensim.models import Word2Vec
@@ -9,6 +10,7 @@ from gensim.models import Word2Vec
 vector_size = 100
 model_name = "item2vec_v2_350.model"
 
+st.write(sys.version)
 
 def id_to_name(uid):
     return ud_df[ud_df['user_id']==uid]['screen_name'].to_string(index=False).strip()
