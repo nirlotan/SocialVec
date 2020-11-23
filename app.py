@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import numpy as np
+import difflib
 
 from gensim.test.utils import common_texts, get_tmpfile
 from gensim.models import Word2Vec
@@ -103,6 +104,11 @@ def load_data():
 st.title('social2vec by Nir Lotan')
 st.write('Welcome to the social2vec inference engine - developed by Nir Lotan')
 
+
+
+selected_task = st.sidebar.selectbox('Select your task:', ('','Find similar users', 'Analogy game'))
+show_search = st.sidebar.checkbox('Show Search Engine')
+
 data_load_state = st.text('Loading data...')
 res = load_data()
 ud_df = res[0]
@@ -111,11 +117,47 @@ init_word = 'Harvard'
 data_load_state.text('Loading data...done!')
 
 
-selected_task = st.selectbox('Select your task:', ('','Find similar users', 'Analogy game'))
+
+
+###########################
+# side bar
+###########################
+st.markdown(
+    f'''
+        <style>
+            .sidebar .sidebar-content {{
+                width: 475px;
+            }}
+        </style>
+    ''',
+    unsafe_allow_html=True
+)
+
+
+
+if (show_search == True):
+    st.sidebar.subheader('Search twitter users')
+    user_input = st.sidebar.text_input('Search for:')
+    string_list = ud_df.sort_values(by='followers_count', ascending = False)['screen_name'].to_list()[0:22000]
+    search_res = difflib.get_close_matches(user_input, string_list, 5)
+
+    df_display = pd.DataFrame()
+    for name in search_res:
+        df_display = df_display.append( (ud_df[ud_df['screen_name']==name][['screen_name','description']]) )
+
+    if (search_res):
+        df_display = df_display.assign(hack='').set_index('hack')
+        st.sidebar.table(df_display[['screen_name','description']])
+
+###########################
+# Main Screen
+###########################
+
+
 
 
 if (selected_task == ''):
-	st.write('please select')
+	st.write('Please select your task on the sidebar')
 
 elif (selected_task == 'Find similar users'):
 
