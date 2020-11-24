@@ -10,6 +10,11 @@ from gensim.models import Word2Vec
 vector_size = 100
 model_name = "item2vec_v3_350.model"
 
+
+#############################
+# Supporting Functions
+#############################
+
 def id_to_name(uid):
     return ud_df[ud_df['user_id']==uid]['screen_name'].to_string(index=False).strip()
     
@@ -84,8 +89,9 @@ def make_clickable(link):
     text = link #.split('=')[1]
     return f'<a target="_blank" href="{link}">{text}</a>'
 
-
-
+##########################
+# Load Data
+##########################
 @st.cache(allow_output_mutation=True)
 def load_data():
     ud_df = pd.read_pickle('users_with_over_200_DETAILS.pkl')
@@ -106,15 +112,15 @@ st.write('Welcome to the social2vec inference engine - developed by Nir Lotan')
 
 
 
-selected_task = st.sidebar.selectbox('Select your task:', ('','Find similar users', 'Analogy game'))
+selected_task = st.sidebar.selectbox('Select your task:', ('','Find similar users', 'Analogy game' ,'Find Similar for 3 users'))
 show_search = st.sidebar.checkbox('Show Search Engine')
 
 data_load_state = st.text('Loading data...')
 res = load_data()
 ud_df = res[0]
 w2v_model = res[1]
-init_word = 'Harvard'
-data_load_state.text('Loading data...done!')
+init_word = ''
+data_load_state.text('Data Loaded Successfully!')
 
 
 
@@ -126,7 +132,17 @@ st.markdown(
     f'''
         <style>
             .sidebar .sidebar-content {{
-                width: 475px;
+                width: 300px;
+            }}
+        </style>
+        
+        <style>
+            .reportview-container .main .block-container{{
+            max-width: {2000}px;
+            padding-top: {10}rem;
+            padding-right: {2}rem;
+            padding-left: {2}rem;
+            padding-bottom: {10}rem;
             }}
         </style>
     ''',
@@ -136,6 +152,19 @@ st.markdown(
 
 
 if (show_search == True):
+
+    st.markdown(
+        f'''
+            <style>
+                .sidebar .sidebar-content {{
+                    width: 475px;
+                }}
+            </style>
+        ''',
+        unsafe_allow_html=True
+    )
+
+
     st.sidebar.subheader('Search twitter users')
     user_input = st.sidebar.text_input('Search for:')
     string_list = ud_df.sort_values(by='followers_count', ascending = False)['screen_name'].to_list()[0:22000]
@@ -157,58 +186,109 @@ if (show_search == True):
 
 
 if (selected_task == ''):
-	st.write('Please select your task on the sidebar')
+    st.write('Please select your task on the sidebar')
 
 elif (selected_task == 'Find similar users'):
 
+    c1, c2 = st.beta_columns(2)
 
-	user_input = st.text_input("Type a Twitter username (exact match, case sensitive):", init_word)
-	result_df = pd.DataFrame(columns=(['User Name','Name', 'Description','URL','Wiki','Similarity']))
+    user_input = c1.text_input("Type a Twitter username (exact match, case sensitive):", init_word)
+    c2.text(".")
+    
+    if (c2.button('Go')):
+        try:
+            result_df = pd.DataFrame(columns=(['User Name','Name', 'Description','URL','Wiki','Similarity']))
+            with st.empty():
+                st.write('Searching... Please wait...')
+                res = ten_most_similar(user_input)    
+                for username in res:
+                    if ( username != 'Series([], )'):
+                        desc = ud_df[ud_df['screen_name']==username]['description'].to_string(index=False)
+                        name = ud_df[ud_df['screen_name']==username]['name'].to_string(index=False)
+                        wiki = ud_df[ud_df['screen_name']==username]['wikipedia'].to_string(index=False)
+                        url = 'http://twitter.com/' + username
 
-	try:
-		res = ten_most_similar(user_input)    
-		st.write('10-20 closest users to ' + user_input + ' are:')
-		for username in res:
-			if ( username != 'Series([], )'):
-				desc = ud_df[ud_df['screen_name']==username]['description'].to_string(index=False)
-				name = ud_df[ud_df['screen_name']==username]['name'].to_string(index=False)
-				wiki = ud_df[ud_df['screen_name']==username]['wikipedia'].to_string(index=False)
-				url = 'http://twitter.com/' + username
+                        original_user_id = name_to_id(user_input)
+                        checked_user_id  = name_to_id(username)
 
-				original_user_id = name_to_id(user_input)
-				checked_user_id  = name_to_id(username)
+                        simil = w2v_model.similarity(original_user_id,checked_user_id)
 
-				simil = w2v_model.similarity(original_user_id,checked_user_id)
+                        result_df = result_df.append({'User Name':username,'Name':name,'Description':desc,'URL':url,'Wiki': wiki,'Similarity':simil  }, ignore_index=True)
 
-				result_df = result_df.append({'User Name':username,'Name':name,'Description':desc,'URL':url,'Wiki': wiki,'Similarity':simil  }, ignore_index=True)
-			else:
-				continue
+                    else:
+                        continue
+                st.write('10-20 closest users to ' + user_input + ' are:')
 
-	except:
-		st.write('I can\'t find ' +user_input+ ' in my dataset. Please try different spelling or different user (sometimes upper/lowercase helps)')
+        except:
+            st.write('I can\'t find ' +user_input+ ' in my dataset. Please try different spelling or different user (sometimes upper/lowercase helps)')
+
+        # link is the column with hyperlinks
+        result_df['URL'] = result_df['URL'].apply(make_clickable)
+        result_df['Wiki'] = result_df['Wiki'].apply(make_clickable)
+        result_df_html = result_df.to_html(escape=False)
+        st.write(result_df_html, unsafe_allow_html=True)
 
 
-	# link is the column with hyperlinks
-	result_df['URL'] = result_df['URL'].apply(make_clickable)
-	result_df['Wiki'] = result_df['Wiki'].apply(make_clickable)
-	result_df_html = result_df.to_html(escape=False)
-	st.write(result_df_html, unsafe_allow_html=True)
+
 
 if (selected_task == 'Analogy game'):
 
-	st.write('Write three Twitter user names (exact names).')
-	st.write('we take the analogy of the first two users and apply on the third')
-	
-	c1, c2, c3, c4 = st.beta_columns(4)
+    st.write('Write three Twitter user names (exact names).')
+    st.write('we take the analogy of the first two users and apply on the third')
 
-	user1 = c1.text_input("Twitter user: ", '')
-	user2 = c2.text_input("is to:", '')
-	user3 = c3.text_input("like:", '')
-	try:
-		res = ''
-		if st.button('Go'):
-			res = analogy(user1,user2,user3)
-			st.write(user1 + ' is to ' + user2 + ' like ' + user3 + ' is to ' + res)
-		c4.text_input('is to:',res)
-	except:
-		st.write('')
+    c1, c2, c3, c4 = st.beta_columns(4)
+
+    user1 = c1.text_input("Twitter user: ", '')
+    user2 = c2.text_input("is to:", '')
+    user3 = c3.text_input("like:", '')
+    try:
+        res = ''
+        if st.button('Go'):
+            res = analogy(user1,user2,user3)
+            st.write(user1 + ' is to ' + user2 + ' like ' + user3 + ' is to ' + res)
+        c4.text_input('is to:',res)
+    except:
+        st.write('')
+        
+if (selected_task == 'Find Similar for 3 users'):
+    st.write('Write three Twitter user names (exact names).')
+    st.write('we will find the most matching results for their average')
+
+    c1, c2, c3 = st.beta_columns(3)
+
+    user1 = c1.text_input("User1: ", '')
+    user2 = c2.text_input("User2:", '')
+    user3 = c3.text_input("User3:", '')
+    try:
+        res = ''
+        if st.button('Go'):
+            word1 = name_to_id(user1)
+            word2 = name_to_id(user2)
+            word3 = name_to_id(user3)
+
+            res = w2v_model.predict_output_word([word1,word2,word3],topn=10)
+            
+            result_df = pd.DataFrame(columns=(['User Name','Name', 'Description','URL','Wiki']))
+
+            for item in res:
+                username = id_to_name(item[0])
+                
+                
+                if ( username != 'Series([], )'):
+                    desc = ud_df[ud_df['screen_name']==username]['description'].to_string(index=False)
+                    name = ud_df[ud_df['screen_name']==username]['name'].to_string(index=False)
+                    wiki = ud_df[ud_df['screen_name']==username]['wikipedia'].to_string(index=False)
+                    url = 'http://twitter.com/' + username
+                    result_df = result_df.append({'User Name':username,'Name':name,'Description':desc,'URL':url,'Wiki': wiki}, ignore_index=True)
+
+            # link is the column with hyperlinks
+            result_df['URL'] = result_df['URL'].apply(make_clickable)
+            result_df['Wiki'] = result_df['Wiki'].apply(make_clickable)
+            result_df_html = result_df.to_html(escape=False)
+            st.write(result_df_html, unsafe_allow_html=True)
+
+    except:
+        st.write('')
+
+
+
