@@ -17,7 +17,14 @@ model_name = "item2vec_v3_350.model"
 
 
 def id_to_name(uid):
-    return ud_df[ud_df["user_id"] == uid]["screen_name"].to_string(index=False).strip()
+
+    res_name = ud_df[ud_df["user_id"] == uid]["screen_name"].to_string(index=False).strip()
+    if res_name == "Series([], )":
+        with open("missing.log", "a") as myfile:
+            myfile.write(uid + "\n")
+        return str(uid)
+    else:
+        return res_name
 
 
 def name_to_id(name):
@@ -81,15 +88,9 @@ def analogy(namea, nameb, namec):
     if idc == "Series([], )":
         st.write(f"User named {namec} is not in my database")
 
-    result = w2v_model.most_similar(negative=[ida], positive=[idb, idc])
+    result = w2v_model.most_similar(negative=[ida], positive=[idb, idc], topn=5)
 
-    res_name = id_to_name(result[0][0])
-    if res_name == "Series([], )":
-        with open("missing.log", "a") as myfile:
-            myfile.write(result[0][0] + "\n")
-        return result[0][0]
-    else:
-        return id_to_name(result[0][0])
+    return result
 
 
 def make_clickable(link):
@@ -282,9 +283,13 @@ if selected_task == "Analogy game":
     try:
         res = ""
         if st.button("Go"):
-            res = analogy(user1, user2, user3)
-            st.write(user1 + " is to " + user2 + " like " + user3 + " is to " + res)
-        c4.text_input("is to:", res)
+            analogy_result = analogy(user1, user2, user3)
+            top_res = id_to_name(analogy_result[0][0])
+            st.write(user1 + " is to " + user2 + " like " + user3 + " is to " + top_res)
+        c4.text_input("is to:", top_res)
+        st.subheader('Top 5 results:')
+        for i, item in enumerate(analogy_result):
+            st.write(f"{i+1}. {id_to_name(item[0])}")
     except:
         st.write("")
 
