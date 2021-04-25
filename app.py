@@ -8,12 +8,13 @@ from gensim.test.utils import common_texts, get_tmpfile
 from gensim.models import Word2Vec
 
 vector_size = 100
-model_name_cbow = "item2vec_v3_350.model"
-model_name_sg = "item2vec_v5_ns_sg.model"
+
+model_name = {  "SocialVec CBOW" : "item2vec_v3_350.model" ,
+                "SocialVec Skip-Gram" : "item2vec_v5_ns_sg.model"
+                }
 
 #defaults
 model_choice = "SocialVec CBOW"
-model_name = model_name_cbow
 
 #############################
 # Supporting Functions
@@ -115,14 +116,9 @@ def load_data():
     wikipedia.user_id = wikipedia.user_id.astype(str)
     ud_df = pd.merge(ud_df, wikipedia, on="user_id", how="outer")
     
-    
-    if "SocialVec CBOW" == model_choice:
-        model_name = model_name_cbow
-    elif "SocialVec Skip-Gram" == model_choice:
-        model_name = model_name_sg
-
-    w2v_model = Word2Vec.load(model_name)
-    return [ud_df, w2v_model]
+#    w2v_model = Word2Vec.load(model_name[model_choice])
+    #return [ud_df, w2v_model]
+    return [ud_df,]
 
 
 ##########################
@@ -153,7 +149,8 @@ show_search = st.sidebar.checkbox("Show Search Engine")
 data_load_state = st.text("Loading data...")
 res = load_data()
 ud_df = res[0]
-w2v_model = res[1]
+#w2v_model = res[1]
+w2v_model = Word2Vec.load(model_name[model_choice])
 init_word = ""
 data_load_state.text("Data Loaded Successfully!")
 
