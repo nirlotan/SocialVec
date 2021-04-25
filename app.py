@@ -8,8 +8,12 @@ from gensim.test.utils import common_texts, get_tmpfile
 from gensim.models import Word2Vec
 
 vector_size = 100
-model_name = "item2vec_v3_350.model"
+model_name_cbow = "item2vec_v3_350.model"
+model_name_sg = "item2vec_v5_ns_sg.model"
 
+#defaults
+model_choice = "SocialVec CBOW"
+model_name = model_name_cbow
 
 #############################
 # Supporting Functions
@@ -110,6 +114,13 @@ def load_data():
     wikipedia.user_id = wikipedia.user_id.apply(lambda x: int(x))
     wikipedia.user_id = wikipedia.user_id.astype(str)
     ud_df = pd.merge(ud_df, wikipedia, on="user_id", how="outer")
+    
+    
+    if "SocialVec CBOW" == model_choice:
+        model_name = model_name_cbow
+    elif "SocialVec Skip-Gram" == model_choice:
+        model_name = model_name_sg
+
     w2v_model = Word2Vec.load(model_name)
     return [ud_df, w2v_model]
 
@@ -120,6 +131,13 @@ def load_data():
 
 st.title("social2vec by Nir Lotan")
 st.write("Welcome to the social2vec inference engine - developed by Nir Lotan")
+
+
+model_choice = st.sidebar.selectbox(
+    "Model version:",
+    (   "SocialVec CBOW", 
+        "SocialVec Skip-Gram")
+    )
 
 
 selected_task = st.sidebar.selectbox(
@@ -198,7 +216,6 @@ if show_search == True:
 ###########################
 # Main Screen
 ###########################
-
 
 if selected_task == "":
     st.write("Please select your task on the sidebar")
