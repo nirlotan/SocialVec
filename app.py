@@ -9,16 +9,10 @@ from gensim.models import Word2Vec
 
 vector_size = 100
 
-model_name = {  "SocialVec CBOW" : "item2vec_v3_350.model" ,
-                "SocialVec Skip-Gram" : "item2vec_v5_ns_sg.model"
-                }
-
-#defaults
-model_choice = "SocialVec CBOW"
 
 #############################
 # Supporting Functions
-#############################
+# ############################
 
 
 def id_to_name(uid):
@@ -105,9 +99,10 @@ def make_clickable(link):
     return f'<a target="_blank" href="{link}">{text}</a>'
 
 
+
 ##########################
 # Load Data
-##########################
+# #########################
 @st.cache(allow_output_mutation=True)
 def load_data():
     ud_df = pd.read_pickle("users_with_over_200_DETAILS.pkl")
@@ -121,12 +116,24 @@ def load_data():
     return [ud_df,]
 
 
+@st.cache(allow_output_mutation=True)
+def load_model():
+    with st.spinner('Downloading word2vec model... please hold...'):
+        cbow_model =        Word2Vec.load("models/SocialVec_v3_350.model")
+        skipgram_model =    Word2Vec.load("models/SocialVec_v6_sg_all.model")
+    
+    return cbow_model, skipgram_model
+    
+    
+
 ##########################
 # Main
-##########################
+# #########################
 
-st.title("social2vec by Nir Lotan")
+st.title("SocialVec")
 st.write("Welcome to the social2vec inference engine - developed by Nir Lotan")
+st.write("URL to Paper: ")
+st.write("contact for additional details: nir dot lotan at gmail dot com")
 
 
 model_choice = st.sidebar.selectbox(
@@ -145,19 +152,27 @@ selected_task = st.sidebar.selectbox(
         "Find Similar for 3 users")
     )
 show_search = st.sidebar.checkbox("Show Search Engine")
-
 data_load_state = st.text("Loading data...")
 res = load_data()
+cbow_model, skipgram_model = load_model()
+
+
+w2v_models = {  "SocialVec CBOW" : cbow_model,
+                "SocialVec Skip-Gram" : skipgram_model
+                }
+
+w2v_model = w2v_models[model_choice]
+
 ud_df = res[0]
 #w2v_model = res[1]
-w2v_model = Word2Vec.load(model_name[model_choice])
+
 init_word = ""
 data_load_state.text("Data Loaded Successfully!")
 
 
 ###########################
 # side bar
-###########################
+# ##########################
 st.markdown(
     f"""
         <style>
@@ -212,7 +227,7 @@ if show_search == True:
 
 ###########################
 # Main Screen
-###########################
+# ##########################
 
 if selected_task == "":
     st.write("Please select your task on the sidebar")
@@ -230,7 +245,7 @@ elif selected_task == "Find similar users":
         try:
             result_df = pd.DataFrame(
                 columns=(
-                    ["User Name", "Name", "Description", "URL", "Wiki", "Similarity"]
+                    [ "Similarity", "User Name", "Name", "Description", "URL", "Wiki"]
                 )
             )
             with st.empty():
@@ -256,12 +271,12 @@ elif selected_task == "Find similar users":
 
                         result_df = result_df.append(
                             {
+                                "Similarity": float("{:.3f}".format(simil)),
                                 "User Name": username,
                                 "Name": name,
                                 "Description": desc,
                                 "URL": url,
-                                "Wiki": wiki,
-                                "Similarity": simil,
+                                "Wiki": wiki
                             },
                             ignore_index=True,
                         )
