@@ -11,5 +11,51 @@ The repository provides several artifacts and demonstrations of SocialVec:
 Feel free to contact us for any questions / requests for joint research based on this framework.
 
 # Usage
-SocialVec implemetation is based on Gensim word2vec implementation. For additional details on Gensim python implementation see the Gensim website: https://radimrehurek.com/gensim/models/word2vec.html
 
+## Prerequisites and imports
+SocialVec implemetation is based on Gensim word2vec implementation. So the first thing you need to do is to import the gensim implementation of Word2Vec
+```python
+from gensim.models import Word2Vec
+```
+For additional details on Gensim python implementation see the Gensim website: https://radimrehurek.com/gensim/models/word2vec.html
+
+## Load Model
+Load the desired model - either the skip gram or CBOW version:
+```python
+# cbow_model 
+sv_model = Word2Vec.load("models/SocialVec_v3_350.model")
+        
+# skipgram_model 
+sv_model = Word2Vec.load("models/SocialVec_v6_sg_all.model")
+```
+
+## User ID
+The SocialVec model uses Twitter user IDs as the identifier of a user. 
+
+For example, my Twitter username is @nirlotan, however if I want to check my similarity to other users, I need to use my user ID, which is: 40642926.
+
+You can obtain the Twitter user ID of a user with 3rd party tools (some are available online), or by calling a simple [tweepy]https://github.com/tweepy/tweepy API call.
+
+For additional details on tweepy usage, please refer to their documentation, however in brief, once the tweepy API is established, this is an easy way to get a userid given a username:
+
+```python
+
+api = tweepy.API(auth)
+screen_name = "nirlotan"
+user = api.get_user(screen_name)
+ID = user.id_str
+```
+
+Once you have the relevant user IDs, you can use SocialVec for numerous insights, for example:
+
+## Similarity Score
+Get the social similarity score between two users (similarity score varies from -1 to 1):
+```python
+similarity = sv_model.similarity(user1_id, user2_id)
+```
+
+## Analogy
+As described in the paper, given 3 users, provide the 4th users. For example: @Android to @Google is like @Windows to ???
+```python
+user4_id = sv_model.most_similar(negative=[user1_id], positive=[user2_id, user3_id], topn=1)
+```
