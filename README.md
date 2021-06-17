@@ -48,6 +48,16 @@ ID = user.id_str
 
 Once you have the relevant user IDs, you can use SocialVec for numerous insights, for example:
 
+## Find similar users
+Find the n most similar users. 
+This query provides a list IDs of the users who are the most similar users to the requested ID based on the social similarity:
+"topn" is the number of users requested
+```python
+similar_users = sv_model.wv.most_similar([user_id], topn=10)
+```
+
+ close_words = model.wv.most_similar([word], topn=50)
+
 ## Similarity Score
 Get the social similarity score between two users (similarity score varies from -1 to 1):
 ```python
