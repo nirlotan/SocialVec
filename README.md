@@ -56,8 +56,6 @@ This query provides a list IDs of the users who are the most similar users to th
 similar_users = sv_model.wv.most_similar([user_id], topn=10)
 ```
 
- close_words = model.wv.most_similar([word], topn=50)
-
 ## Similarity Score
 Get the social similarity score between two users (similarity score varies from -1 to 1):
 ```python
