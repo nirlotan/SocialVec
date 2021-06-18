@@ -68,9 +68,9 @@ def ten_most_similar(wrd):
     # uid = ud_df[ud_df['screen_name']==wrd]['user_id'].to_string(index=False)
     # uid = uid.strip()
     return tsnescatterplot(
-        w2v_model,
+        sv_model,
         uid,
-        [i[0] for i in w2v_model.wv.most_similar(negative=[uid], topn=30)],
+        [i[0] for i in sv_model.wv.most_similar(negative=[uid], topn=30)],
     )
 
 
@@ -87,7 +87,7 @@ def analogy(namea, nameb, namec):
     if idc == "Series([], )":
         st.write(f"User named {namec} is not in my database")
 
-    result = w2v_model.most_similar(negative=[ida], positive=[idb, idc], topn=5)
+    result = sv_model.most_similar(negative=[ida], positive=[idb, idc], topn=5)
 
     return result
 
@@ -105,14 +105,14 @@ def make_clickable(link):
 # #########################
 @st.cache(allow_output_mutation=True)
 def load_data():
-    ud_df = pd.read_pickle("users_with_over_200_DETAILS.pkl")
-    wikipedia = pd.read_csv("wikidata_users_sample.csv")
+    ud_df = pd.read_pickle("auxiliary/users_with_over_200_DETAILS.pkl")
+    wikipedia = pd.read_csv("auxiliary/wikidata_users_sample.csv")
     wikipedia.user_id = wikipedia.user_id.apply(lambda x: int(x))
     wikipedia.user_id = wikipedia.user_id.astype(str)
     ud_df = pd.merge(ud_df, wikipedia, on="user_id", how="outer")
     
-#    w2v_model = Word2Vec.load(model_name[model_choice])
-    #return [ud_df, w2v_model]
+#    sv_model = Word2Vec.load(model_name[model_choice])
+    #return [ud_df, sv_model]
     return [ud_df,]
 
 
@@ -131,10 +131,9 @@ def load_model():
 # #########################
 
 st.title("SocialVec")
-st.write("Welcome to the social2vec inference engine - developed by Nir Lotan")
-st.write("URL to Paper: ")
-st.write("contact for additional details: nir dot lotan at gmail dot com")
-
+st.write("Welcome to the SocialVec demo!")
+st.markdown("**SocialVec** is a general framework of Social Embeddings for eliciting social world knowledge from social networks. This demo was  developed by Nir Lotan based on a research by Nir Lotan and Dr. Einat Minkov. Paper url: ______; [github example](https://github.com/nirlotan/SocialVec); [contact](https://github.com/nirlotan)")
+st.markdown("""---""")
 
 model_choice = st.sidebar.selectbox(
     "Model version:",
@@ -157,14 +156,14 @@ res = load_data()
 cbow_model, skipgram_model = load_model()
 
 
-w2v_models = {  "SocialVec CBOW" : cbow_model,
+sv_models = {  "SocialVec CBOW" : cbow_model,
                 "SocialVec Skip-Gram" : skipgram_model
                 }
 
-w2v_model = w2v_models[model_choice]
+sv_model = sv_models[model_choice]
 
 ud_df = res[0]
-#w2v_model = res[1]
+#sv_model = res[1]
 
 init_word = ""
 data_load_state.text("Data Loaded Successfully!")
@@ -184,7 +183,7 @@ st.markdown(
         <style>
             .reportview-container .main .block-container{{
             max-width: {2000}px;
-            padding-top: {10}rem;
+            padding-top: {2}rem;
             padding-right: {2}rem;
             padding-left: {2}rem;
             padding-bottom: {10}rem;
@@ -230,7 +229,7 @@ if show_search == True:
 # ##########################
 
 if selected_task == "":
-    st.write("Please select your task on the sidebar")
+    st.subheader("Please select your task on the sidebar")
 
 elif selected_task == "Find similar users":
 
@@ -267,7 +266,7 @@ elif selected_task == "Find similar users":
                         original_user_id = name_to_id(user_input)
                         checked_user_id = name_to_id(username)
 
-                        simil = w2v_model.similarity(original_user_id, checked_user_id)
+                        simil = sv_model.similarity(original_user_id, checked_user_id)
 
                         result_df = result_df.append(
                             {
@@ -335,8 +334,8 @@ if selected_task == "Who is closer to who?":
     try:
         res = ""
         if st.button("Go"):
-            simil1 = w2v_model.similarity(name_to_id(user1), name_to_id(user2))
-            simil2 = w2v_model.similarity(name_to_id(user1), name_to_id(user3))
+            simil1 = sv_model.similarity(name_to_id(user1), name_to_id(user2))
+            simil2 = sv_model.similarity(name_to_id(user1), name_to_id(user3))
 
             st.write(f"{user1} similarity to {user2} is {simil1:.2f}")
             st.write(f"{user1} similarity to {user3} is {simil2:.2f}")
@@ -361,7 +360,7 @@ if selected_task == "Find Similar for 3 users":
             word2 = name_to_id(user2)
             word3 = name_to_id(user3)
 
-            res = w2v_model.predict_output_word([word1, word2, word3], topn=10)
+            res = sv_model.predict_output_word([word1, word2, word3], topn=10)
 
             result_df = pd.DataFrame(
                 columns=(["User Name", "Name", "Description", "URL", "Wiki"])
