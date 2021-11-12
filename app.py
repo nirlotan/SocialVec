@@ -132,7 +132,7 @@ def load_model():
 
 st.title("SocialVec")
 st.write("Welcome to the SocialVec demo!")
-st.markdown("**SocialVec** is a general framework of Social Embeddings for eliciting social world knowledge from social networks. This demo was  developed by Nir Lotan based on a research by Nir Lotan and Dr. Einat Minkov. Paper url: ______; [github example](https://github.com/nirlotan/SocialVec); [contact](https://github.com/nirlotan)")
+st.markdown("**SocialVec** is a general framework of Social Embeddings for eliciting social world knowledge from social networks. <br> This demo was  developed by Nir Lotan based on a research by Nir Lotan and Dr. Einat Minkov. Paper url: https://arxiv.org/abs/2111.03514; [github example](https://github.com/nirlotan/SocialVec); [contact](https://github.com/nirlotan)")
 st.markdown("""---""")
 
 model_choice = st.sidebar.selectbox(
