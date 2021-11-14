@@ -1,6 +1,6 @@
 # SocialVec
 
-SocialVec is a general framework of Social Embeddings for eliciting social world knowledge from social networks, which was developed by Nir Lotan and Dr. Einat Minkov as part of their research, available here: url to be added.
+SocialVec is a general framework of Social Embeddings for eliciting social world knowledge from social networks, which was developed by Nir Lotan and Dr. Einat Minkov as part of their research, available here: https://arxiv.org/abs/2111.03514
 
 The repository provides several artifacts and demonstrations of SocialVec:
 
