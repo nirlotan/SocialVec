@@ -1,4 +1,4 @@
 gensim==3.8.3
 pandas==1.0.5
-streamlit==0.71.0
+streamlit==1.11.1
 numpy==1.22.0
