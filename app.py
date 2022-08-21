@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import numpy as np
 import difflib
+import urllib.request
 
 from gensim.test.utils import common_texts, get_tmpfile
 from gensim.models import Word2Vec
@@ -121,9 +122,8 @@ def load_model():
     with st.spinner('Downloading word2vec model... please hold...'):
         cbow_model =        Word2Vec.load("models/SocialVec_v3_350.model")
         skipgram_model =    Word2Vec.load("models/SocialVec_v6_sg_all.model")
-        
-        with open('https://www.dropbox.com/s/qiuqdigicuxsavz/SocialVec2020_2022.pkl?dl=1', 'rb') as f:
-            sg_2020_2022 = pickle.load(f)
+
+        sg_2020_2022 = pickle.load(urllib.request.urlopen("https://www.dropbox.com/s/qiuqdigicuxsavz/SocialVec2020_2022.pkl?dl=1"))
         
     return cbow_model, skipgram_model, sg_2020_2022
     
