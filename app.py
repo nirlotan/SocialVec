@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import difflib
 import urllib.request
+import pickle
 
 from gensim.test.utils import common_texts, get_tmpfile
 from gensim.models import Word2Vec
