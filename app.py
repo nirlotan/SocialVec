@@ -121,8 +121,9 @@ def load_model():
     with st.spinner('Downloading word2vec model... please hold...'):
         cbow_model =        Word2Vec.load("models/SocialVec_v3_350.model")
         skipgram_model =    Word2Vec.load("models/SocialVec_v6_sg_all.model")
+        sg_2020_2022 =      Word2Vec.load("https://www.dropbox.com/s/1cg7wcs8izpuee7/SocialVec_2020-2022_sg.model?dl=1")
     
-    return cbow_model, skipgram_model
+    return cbow_model, skipgram_model, sg_2020_2022
     
     
 
@@ -139,7 +140,8 @@ st.markdown("""---""")
 
 model_choice = st.sidebar.selectbox(
     "Model version:",
-    (   "SocialVec CBOW", 
+    (   "SG 2020-2022",
+        "SocialVec CBOW", 
         "SocialVec Skip-Gram")
     )
 
@@ -155,11 +157,12 @@ selected_task = st.sidebar.selectbox(
 show_search = st.sidebar.checkbox("Show Search Engine")
 data_load_state = st.text("Loading data...")
 res = load_data()
-cbow_model, skipgram_model = load_model()
+cbow_model, skipgram_model, sg_2020_2022 = load_model()
 
 
 sv_models = {  "SocialVec CBOW" : cbow_model,
-                "SocialVec Skip-Gram" : skipgram_model
+                "SocialVec Skip-Gram" : skipgram_model,
+                "SG 2020-2022" : sg_2020_2022
                 }
 
 sv_model = sv_models[model_choice]
