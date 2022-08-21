@@ -1,12 +1,12 @@
-import streamlit as st
-import numpy as np
-import pandas as pd
-import numpy as np
 import difflib
 import pickle
+import urllib.request
 
-from gensim.test.utils import common_texts, get_tmpfile
+import numpy as np
+import pandas as pd
+import streamlit as st
 from gensim.models import Word2Vec
+from gensim.test.utils import common_texts, get_tmpfile
 
 vector_size = 100
 
@@ -122,10 +122,10 @@ def load_model():
     with st.spinner('Downloading word2vec model... please hold...'):
         cbow_model =        Word2Vec.load("models/SocialVec_v3_350.model")
         skipgram_model =    Word2Vec.load("models/SocialVec_v6_sg_all.model")
+
+        sg_2020_2022 = pickle.load(urllib.request.urlopen("https://www.dropbox.com/s/qiuqdigicuxsavz/SocialVec2020_2022.pkl?dl=1"))
         
-        with open('https://www.dropbox.com/s/qiuqdigicuxsavz/SocialVec2020_2022.pkl?dl=1', 'rb') as f:
-            sg_2020_2022 = pickle.load(f)
-    
+  
     return cbow_model, skipgram_model, sg_2020_2022
     
     
@@ -133,7 +133,7 @@ def load_model():
 ##########################
 # Main
 # #########################
-
+st.set_page_config(layout="wide")
 st.title("SocialVec")
 st.write("Welcome to the SocialVec demo!")
 st.markdown("**SocialVec** is a general framework of Social Embeddings for eliciting social world knowledge from social networks.")
@@ -241,7 +241,7 @@ if selected_task == "":
 
 elif selected_task == "Find similar users":
 
-    c1, c2 = st.beta_columns(2)
+    c1, c2 = st.columns(2)
 
     user_input = c1.text_input(
         "Type a Twitter username (exact match, case sensitive):", init_word
@@ -274,7 +274,7 @@ elif selected_task == "Find similar users":
                         original_user_id = name_to_id(user_input)
                         checked_user_id = name_to_id(username)
 
-                        simil = sv_model.similarity(original_user_id, checked_user_id)
+                        simil = sv_model.wv.similarity(original_user_id, checked_user_id)
 
                         result_df = result_df.append(
                             {
@@ -292,13 +292,10 @@ elif selected_task == "Find similar users":
                         continue
                 st.write("10-20 closest users to " + user_input + " are:")
 
-        except:
-            st.write(
-                "I can't find "
-                + user_input
-                + " in my dataset. Please try different spelling or different user (sometimes upper/lowercase helps)"
-            )
-
+        except Exception as e:
+            st.write( f"Something went wrong. perhaps {user_input} is not in our database")
+            st.code( f"exception: {e}")
+    
         # link is the column with hyperlinks
         result_df["URL"] = result_df["URL"].apply(make_clickable)
         result_df["Wiki"] = result_df["Wiki"].apply(make_clickable)
@@ -311,7 +308,7 @@ if selected_task == "Analogy game":
     st.write("Write three Twitter user names (exact names).")
     st.write("we take the analogy of the first two users and apply on the third")
 
-    c1, c2, c3, c4 = st.beta_columns(4)
+    c1, c2, c3, c4 = st.columns(4)
 
     user1 = c1.text_input("Twitter user: ", "")
     user2 = c2.text_input("is to:", "")
@@ -336,7 +333,7 @@ if selected_task == "Who is closer to who?":
     st.write("we take the analogy of the first two users and apply on the third")
 
     user1 = st.text_input("Main user: ", "")
-    c1, c2 = st.beta_columns(2)
+    c1, c2 = st.columns(2)
     user2 = c1.text_input("Compare to 1:", "")
     user3 = c2.text_input("Compare to 2:", "")
     try:
@@ -356,7 +353,7 @@ if selected_task == "Find Similar for 3 users":
     st.write("Write three Twitter user names (exact names).")
     st.write("we will find the most matching results for their average")
 
-    c1, c2, c3 = st.beta_columns(3)
+    c1, c2, c3 = st.columns(3)
 
     user1 = c1.text_input("User1: ", "")
     user2 = c2.text_input("User2:", "")
