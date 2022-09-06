@@ -151,8 +151,7 @@ model_choice = st.sidebar.selectbox(
 
 selected_task = st.sidebar.selectbox(
     "Select your task:",
-    (   "", 
-        "Find similar users", 
+    (   "Find similar users", 
         "Analogy game", 
         "Who is closer to who?",
         "Find Similar for 3 users")
