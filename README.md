@@ -23,10 +23,15 @@ For additional details on Gensim python implementation see the Gensim website: h
 Load the desired model - either the skip gram or CBOW version:
 ```python
 # cbow_model 
-sv_model = Word2Vec.load("models/SocialVec_v3_350.model")
+SocialVec = Word2Vec.load("models/SocialVec_v3_350.model")
         
 # skipgram_model 
-sv_model = Word2Vec.load("models/SocialVec_v6_sg_all.model")
+SocialVec = Word2Vec.load("models/SocialVec_v6_sg_all.model")
+```
+
+Load the latest 2022 model directly from the web:
+```python
+SocialVec = pickle.load(urllib.request.urlopen("https://www.dropbox.com/s/qiuqdigicuxsavz/SocialVec2020_2022.pkl?dl=1"))
 ```
 
 ## User ID
@@ -53,17 +58,17 @@ Find the n most similar users.
 This query provides a list IDs of the users who are the most similar users to the requested ID based on the social similarity:
 "topn" is the number of users requested
 ```python
-similar_users = sv_model.wv.most_similar([user_id], topn=10)
+similar_users = SocialVec.wv.most_similar([user_id], topn=10)
 ```
 
 ## Similarity Score
 Get the social similarity score between two users (similarity score varies from -1 to 1):
 ```python
-similarity = sv_model.similarity(user1_id, user2_id)
+similarity = SocialVec.similarity(user1_id, user2_id)
 ```
 
 ## Analogy
 As described in the paper, given 3 users, provide the 4th users. For example: @Android to @Google is like @Windows to ???
 ```python
-user4_id = sv_model.most_similar(negative=[user1_id], positive=[user2_id, user3_id], topn=1)
+user4_id = SocialVec.most_similar(negative=[user1_id], positive=[user2_id, user3_id], topn=1)
 ```
