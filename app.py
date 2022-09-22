@@ -111,22 +111,17 @@ def load_data():
     wikipedia.user_id = wikipedia.user_id.apply(lambda x: int(x))
     wikipedia.user_id = wikipedia.user_id.astype(str)
     ud_df = pd.merge(ud_df, wikipedia, on="user_id", how="outer")
-    
-#    sv_model = Word2Vec.load(model_name[model_choice])
-    #return [ud_df, sv_model]
-    return [ud_df,]
+
+    return ud_df
 
 
 @st.cache(allow_output_mutation=True)
 def load_model():
     with st.spinner('Downloading word2vec model... please hold...'):
-        cbow_model =        Word2Vec.load("models/SocialVec_v3_350.model")
-        skipgram_model =    Word2Vec.load("models/SocialVec_v6_sg_all.model")
-
         sg_2020_2022 = pickle.load(urllib.request.urlopen("https://www.dropbox.com/s/qiuqdigicuxsavz/SocialVec2020_2022.pkl?dl=1"))
         
   
-    return cbow_model, skipgram_model, sg_2020_2022
+    return sg_2020_2022
     
     
 
@@ -141,14 +136,6 @@ st.markdown("This demo was  developed by Nir Lotan based on a research by Nir Lo
 st.markdown("Paper url: https://arxiv.org/abs/2111.03514; [github example](https://github.com/nirlotan/SocialVec); [contact](https://github.com/nirlotan)")
 st.markdown("""---""")
 
-model_choice = st.sidebar.selectbox(
-    "Model version:",
-    (   "SG 2020-2022",
-        "SocialVec CBOW", 
-        "SocialVec Skip-Gram")
-    )
-
-
 selected_task = st.sidebar.selectbox(
     "Select your task:",
     (   "Find similar users", 
@@ -158,19 +145,8 @@ selected_task = st.sidebar.selectbox(
     )
 show_search = st.sidebar.checkbox("Show Search Engine")
 data_load_state = st.text("Loading data...")
-res = load_data()
-cbow_model, skipgram_model, sg_2020_2022 = load_model()
-
-
-sv_models = {  "SocialVec CBOW" : cbow_model,
-                "SocialVec Skip-Gram" : skipgram_model,
-                "SG 2020-2022" : sg_2020_2022
-                }
-
-sv_model = sv_models[model_choice]
-
-ud_df = res[0]
-#sv_model = res[1]
+ud_df = load_data()
+sv_model = load_model()
 
 init_word = ""
 data_load_state.text("Data Loaded Successfully!")
