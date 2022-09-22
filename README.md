@@ -6,7 +6,7 @@ The repository provides several artifacts and demonstrations of SocialVec:
 
 * Under the "models" folder you can find two traned models of SocialVec, applied on the social network of Twitter. The difference between these models is that one was implemented using CBOW, and the other using Skip Gram.
 * Under the classification method you can find 7 twitter users attributes classifiers, which were developed based on SocialVec, and a usage example. These classifiers provides a binary classification of the user's age, gender, income and education levels, ethnisity (race) and having children or not, as detaied in the research.
-* The main folder includes the implementation of a Streamlit application utilizing the SocialVec Social with some fun demo applications. This application can be accessed via: [https://share.streamlit.io/nirlotan/social2vec/app.py](https://nirlotan-socialvec-app-30uqjf.streamlitapp.com)
+* The main folder includes the implementation of a Streamlit application utilizing the SocialVec Social with some fun demo applications. This application can be accessed via: [https://nirlotan-socialvec-app-30uqjf.streamlitapp.co](https://nirlotan-socialvec-app-30uqjf.streamlitapp.com)
 
 Feel free to contact us for any questions / requests for joint research based on this framework.
 
@@ -20,14 +20,6 @@ from gensim.models import Word2Vec
 For additional details on Gensim python implementation see the Gensim website: https://radimrehurek.com/gensim/models/word2vec.html
 
 ## Load Model
-Load the desired model - either the skip gram or CBOW version:
-```python
-# cbow_model 
-SocialVec = Word2Vec.load("models/SocialVec_v3_350.model")
-        
-# skipgram_model 
-SocialVec = Word2Vec.load("models/SocialVec_v6_sg_all.model")
-```
 
 Load the latest 2022 model directly from the web:
 ```python
