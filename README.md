@@ -2,6 +2,12 @@
 
 SocialVec is a general framework of Social Embeddings for eliciting social world knowledge from social networks, which was developed by Nir Lotan and Dr. Einat Minkov as part of their research, available here: https://arxiv.org/abs/2111.03514
 
+**_New:_** SocialVec is now a library you can import and use.
+
+The below documentation needs to be updated accordingly (WIP)
+
+
+
 The repository provides several artifacts and demonstrations of SocialVec:
 
 * Under the "models" folder you can find two traned models of SocialVec, applied on the social network of Twitter. The difference between these models is that one was implemented using CBOW, and the other using Skip Gram.
