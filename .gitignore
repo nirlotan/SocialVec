@@ -127,3 +127,14 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+socialvec/SocialVec2020_2022.pkl.gz
+socialvec/metadata.parquet.gz
+tmp/.DS_Store
+tmp/Untitled.ipynb
+.idea/.gitignore
+.idea/misc.xml
+.idea/modules.xml
+.idea/SocialVec.iml
+.idea/vcs.xml
+.idea/inspectionProfiles/profiles_settings.xml
+.vscode/settings.json
