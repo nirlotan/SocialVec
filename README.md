@@ -1,8 +1,24 @@
 # SocialVec
 
-SocialVec is a general framework of Social Embeddings for eliciting social world knowledge from social networks, which was developed by Nir Lotan and Dr. Einat Minkov as part of their research, available here: https://arxiv.org/abs/2111.03514
+SocialVec is a general framework of Social Embeddings for eliciting social world knowledge from social networks, which was developed by Nir Lotan and Einat Minkov as part of their research, available here: https://arxiv.org/abs/2111.03514
 
-**_New:_** SocialVec is now a library you can import and use.
+**_New:_** SocialVec is now a library you can import and use!
+
+## Installation
+```python
+pip install socialvec
+```
+## Initialization
+```python
+from socialvec.socialvec import SocialVec
+sv = SocialVec()
+```
+
+
+## Usage Samples
+
+
+
 
 The below documentation needs to be updated accordingly (WIP)
 
