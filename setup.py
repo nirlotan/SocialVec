@@ -10,7 +10,7 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['Click>=7.0', ]
+requirements = ['click>=8.1.3','setuptools>=60.2.0','pandas>=1.5.0','numpy>=1.23.3','fastparquet>=0.8.3','pyarrow==6.0.1','wget>=3.2', 'yaspin', 'yaml', 'gensim>4']
 
 test_requirements = [ ]
 
@@ -44,6 +44,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/nirlotan/socialvec',
-    version='0.1.0',
+    version='0.1.2',
     zip_safe=False,
 )

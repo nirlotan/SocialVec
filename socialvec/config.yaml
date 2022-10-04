@@ -1,4 +1,9 @@
-local_model: SocialVec2020_2022.pkl.gz
-default_model_url: https://www.dropbox.com/s/5s9mykbwe0nxir6/SocialVec2020_2022.pkl.gz?dl=1
-local_metadata: metadata.parquet.gz
-default_metadata_url: https://www.dropbox.com/s/060xprg4emblqwu/metadata.parquet.gz?dl=1
+models:
+    - name: SocialVec2020.pkl.gz
+      remote_path: https://www.dropbox.com/s/lti8npc8r2l4wch/SocialVec2020.pkl.gz?dl=1
+    - name: SocialVec2020_2022.pkl.gz
+      remote_path: https://www.dropbox.com/s/5s9mykbwe0nxir6/SocialVec2020_2022.pkl.gz?dl=1
+metadata:
+    - name: metadata.parquet.gz
+    - remote_path: https://www.dropbox.com/s/060xprg4emblqwu/metadata.parquet.gz?dl=1
+

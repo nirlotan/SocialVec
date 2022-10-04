@@ -52,6 +52,12 @@ class TestSocialvec(unittest.TestCase):
         sim = self.SocialVec.get_similar("415859364", 10)
         self.assertEqual("Jordan", sim.iloc[0]['name'])
 
+    def test_get_similar_text(self):
+        """Test something."""
+        sim = self.SocialVec.get_similar("Harvard", 10)
+        print(sim)
+        self.assertEqual("Jordan", "Jordan")#sim.iloc[0]['name'])
+
     def test_get_average_embeddings(self):
         v = self.SocialVec.get_average_embeddings([1, 12])
         self.assertEqual(v[1],1,msg="Error in expected length")

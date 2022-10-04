@@ -6,37 +6,47 @@ import yaml
 import os
 import wget
 from yaspin import yaspin
-from gensim.models import Word2Vec
+#from gensim.models import Word2Vec
 import gzip
 
 
 class SocialVec():
-    def __init__(self):
+    def __init__(self, model_name="Default"):
 
         # Read configuration from config file
         current_folder = os.path.dirname(__file__)
         with open(os.path.join(current_folder, "config.yaml"), 'r') as f:
             self.config = yaml.load(f.read(), Loader=yaml.FullLoader)
 
-        if not os.path.exists(os.path.join(current_folder, self.config["local_model"])):
+        if model_name == "Default":
+            model_name = self.config['models'][0]['name']
+
+        print(model_name)
+
+        if not os.path.exists(os.path.join(current_folder, model_name)):
+
+            for m in self.config['models']:
+                if m['name'] == model_name:
+                    model_path = m['remote_path']
+
             # Load SocialVec model from the web
             print("First time model download")
-            wget.download(self.config["default_model_url"],
-                          os.path.join(current_folder,self.config["local_model"]))
+            wget.download(model_path,
+                          os.path.join(current_folder,model_name))
 
         with yaspin(text="Initialize Model") as spinner:
-            with gzip.open(os.path.join(current_folder, self.config["local_model"]), 'rb') as pickle_file:
+            with gzip.open(os.path.join(current_folder, model_name), 'rb') as pickle_file:
                 self.sv = pickle.load(pickle_file)
                 spinner.ok("✅ ")
 
-        if not os.path.exists(os.path.join(current_folder, self.config["local_metadata"])):
+        if not os.path.exists(os.path.join(current_folder, self.config['metadata'][0]['name'])):
             # Load SocialVec metadata from the web
             print("First time metadata download")
-            wget.download(self.config["default_metadata_url"],
-                          os.path.join(current_folder,self.config["local_metadata"]))
+            wget.download(self.config['metadata'][1]['remote_path'],
+                          os.path.join(current_folder,self.config['metadata'][0]['name']))
 
         with yaspin(text="Load Metadata") as spinner:
-            self.entities = pd.read_parquet(os.path.join(current_folder, self.config["local_metadata"]),
+            self.entities = pd.read_parquet(os.path.join(current_folder, self.config['metadata'][0]['name']),
                                             engine="fastparquet")
             spinner.ok("✅ ")
 
@@ -135,7 +145,7 @@ class SocialVec():
         if isinstance(input, int) or (isinstance(input, str) and input.isdigit()):
             input = self.validate_userid(input)
         elif isinstance(input, str):
-            userid = self.validate_username(input)
+            input = self.validate_username(input)
         #else input is a 'vector'
 
         sim = self.sv.wv.most_similar(input, topn=topn)
@@ -143,6 +153,18 @@ class SocialVec():
         return pd.merge(similar, self.entities, on='twitter_id', how='left')
 
     def __getitem__(self, key):
+        """
+        Overload [] operator to return the entity embeddings
+
+        Parameters
+        ----------
+        key - integer, string with user ID or string with username
+
+        Returns
+        -------
+        SocialVec embeddings vector of the popular entity
+
+        """
         if isinstance(key, int) or key.isdigit():
             userid = self.validate_userid(key)
         else:
@@ -151,9 +173,25 @@ class SocialVec():
         return self.sv.wv[userid]
 
     def get_embeddings(self, entity):
+        """
+        This function is a different way to trigger the [] operator
+        """
         return self[entity]
 
     def get_average_embeddings(self, entity_list, type=""):
+        """
+        This function returns the average embeddings for a given list of Twitter user IDs
+
+        Parameters
+        ----------
+        entity_list - list of entities IDs
+        type - will be extended for future use with usernames
+
+        Returns
+        -------
+        A tuple of the (1) average vector (2) the number of popular entities on which it was based
+
+        """
 
         popular_entities = []
         for entity in entity_list:
