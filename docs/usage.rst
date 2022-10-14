@@ -4,4 +4,6 @@ Usage
 
 To use SocialVec in a project::
 
-    import socialvec
+    from socialvec.socialvec import SocialVec
+
+    sv = SocialVec()

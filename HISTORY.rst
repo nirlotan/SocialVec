@@ -18,3 +18,7 @@ History
 * reaarange config.yaml
 * Support multiple versions of the SocialVec model
 * Fix bug when searching for similarity using username
+
+0.1.3 (2022-10-14)
+------------------
+Initial version of SocialVecClassifier

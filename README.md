@@ -55,19 +55,6 @@ sv.get_similar('jack')
 
 
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -181,19 +168,6 @@ sv.get_similar(v[0])
 
 
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -313,19 +287,6 @@ sv.get_similar(edu_ids)
 
 
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -433,19 +394,6 @@ sv.get_similar(sports_ids)
 
 
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -541,3 +489,24 @@ sv.get_similar(sports_ids)
   </tbody>
 </table>
 </div>
+
+
+# SocialVecClassifier
+
+## Initialization
+
+SocialVecClassifier is part of the socialvec package, so no additional installation is needed, however you need to import and initiate it seperately:
+
+```python
+from socialvec.socialvec import SocialVecClassifier
+svc = SocialVecClassifier()
+```
+
+## Usage Samples
+
+Get political classification for a user, using its SocialVec vector:
+
+```python
+svc.predict_political(sv['ev'])
+```
+predict_political will return a Republican/Democrat classification, including confidence interval between 0 to 1.

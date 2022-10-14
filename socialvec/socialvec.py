@@ -8,7 +8,8 @@ import wget
 from yaspin import yaspin
 #from gensim.models import Word2Vec
 import gzip
-
+from sklearn.metrics.pairwise import cosine_similarity
+from tensorflow import keras
 
 class SocialVec():
     def __init__(self, model_name="Default"):
@@ -20,8 +21,6 @@ class SocialVec():
 
         if model_name == "Default":
             model_name = self.config['models'][0]['name']
-
-        print(model_name)
 
         if not os.path.exists(os.path.join(current_folder, model_name)):
 
@@ -69,8 +68,8 @@ class SocialVec():
             raise Exception("User id must be an integer or a string with integer value")
 
         #check if user exists in the popular entities database
-        if self.entities[self.entities['twitter_id'] == userid].shape[0] == 0:
-            raise Exception("User not in SocialVec Metadata")
+        if userid not in self.sv.wv.key_to_index.keys():
+            raise Exception("User not in this SocialVec model version")
 
         return userid
 
@@ -208,4 +207,79 @@ class SocialVec():
             sv = np.zeros(100)
 
         return sv, len(popular_entities)
+
+    def get_similarity(self, entity1, entity2):
+        """
+        This function returns the similarity between two entities
+
+        Parameters
+        ----------
+        entity1 - first entity ID
+        entity2 - second entity ID
+
+        Returns
+        -------
+        The cosine similarity score between the two entities
+
+        """
+
+        if type(entity1)==np.ndarray:
+            v1 = entity1
+        else:
+            v1 = self[entity1]
+        if type(entity2) == np.ndarray:
+            v2 = entity2
+        else:
+            v2 = self[entity2]
+
+        return cosine_similarity(v1.reshape(1, -1),v2.reshape(1, -1))[0][0]
+
+
+
+class SocialVecClassifier():
+    def __init__(self):
+
+        # Read configuration from config file
+        current_folder = os.path.dirname(__file__)
+        with open(os.path.join(current_folder, "config.yaml"), 'r') as f:
+            self.config = yaml.load(f.read(), Loader=yaml.FullLoader)
+
+        model_name = self.config['classification_models'][0]['name']
+
+        if not os.path.exists(os.path.join(current_folder, model_name)):
+
+            for m in self.config['classification_models']:
+                if m['name'] == model_name:
+                    model_path = m['remote_path']
+
+            # Load SocialVec model from the web
+            print("First time model download")
+            wget.download(model_path,
+                          os.path.join(current_folder,model_name))
+
+        self.political_model = keras.models.load_model(os.path.join(current_folder,model_name))
+
+    def predict_political_proba(self, v):
+        """
+        Return a number between 0 to 1 with the probabiliy in the selected class
+        :param v:
+        :type v:
+        :return:
+        :rtype:
+        """
+        return abs(self.political_model.predict(v.reshape(1, 100), verbose=False)[0][0] - 0.5)*2
+
+    def predict_political(self, v):
+        prediction = self.political_model.predict(v.reshape(1, 100), verbose=False)[0][0]
+
+        # Original prediction is 0 for Democrat, 1 for Republican.
+        # We convert it here to a confidence interval between 0 to 1 for either of the classes
+        pred_proba = abs(prediction - 0.5)*2
+
+        if round(prediction):
+            affiliation =  'Republican'
+        else:
+            affiliation = 'Democrat'
+
+        return (affiliation, pred_proba)
 

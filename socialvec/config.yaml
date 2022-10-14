@@ -6,4 +6,6 @@ models:
 metadata:
     - name: metadata.parquet.gz
     - remote_path: https://www.dropbox.com/s/060xprg4emblqwu/metadata.parquet.gz?dl=1
+classification_models:
+    - name: SocialVec_political_2022.h5
 

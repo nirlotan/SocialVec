@@ -8,5 +8,9 @@ recursive-include socialvec *
 recursive-include tests *
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
+recursive-exclude *.gz
+exclude socialvec/SocialVec2020_2022.pkl.gz
+exclude socialvec/SocialVec2020.pkl.gz
+exclude socialvec/metadata.parquet.gz
 
 recursive-include docs *.rst conf.py Makefile make.bat *.jpg *.png *.gif

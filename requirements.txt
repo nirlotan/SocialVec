@@ -6,5 +6,6 @@ fastparquet>=0.8.3
 pyarrow==6.0.1
 wget>=3.2
 yaspin
-pyyaml
+PyYAML
 gensim>4
+sklearn
