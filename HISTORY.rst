@@ -21,4 +21,8 @@ History
 
 0.1.3 (2022-10-14)
 ------------------
-Initial version of SocialVecClassifier
+* Initial version of SocialVecClassifier
+
+0.1.4 (2022-11-08)
+------------------
+* Updates to SocialVecClassifier

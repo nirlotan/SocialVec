@@ -1,0 +1,5 @@
+[credentials]
+consumer_key = "XXXXXX"
+consumer_secret = "YYYYYYYY"
+access_token ="ZZZZZZZZ"
+access_token_secret = "QQQQQQQQ"

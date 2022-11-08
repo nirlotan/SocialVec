@@ -495,11 +495,16 @@ sv.get_similar(sports_ids)
 
 ## Initialization
 
-SocialVecClassifier is part of the socialvec package, so no additional installation is needed, however you need to import and initiate it seperately:
+SocialVecClassifier is part of the socialvec package, so no additional installation is needed, however you need to initiate it seperately after creating the SocialVec object:
 
 ```python
-from socialvec.socialvec import SocialVecClassifier
-svc = SocialVecClassifier()
+
+# create a SocialVec object as decribed above
+from socialvec.socialvec import SocialVec
+sv = SocialVec()
+
+#init the classifier
+sv.init_classifier()
 ```
 
 ## Usage Samples
@@ -507,6 +512,12 @@ svc = SocialVecClassifier()
 Get political classification for a user, using its SocialVec vector:
 
 ```python
-svc.predict_political(sv['ev'])
+
+# The classifier gets a SocialVec embedding vector as input, e.g.:
+sv.classifier.predict_political( sv['JoeBiden'] )
+
+#or:
+sv.classifier.predict_political( sv['realDonaldTrump'] )
+
 ```
-predict_political will return a Republican/Democrat classification, including confidence interval between 0 to 1.
+predict_political will return a Republican/Democrat classification, including confidence interval between 0 to 1, where 1 is high confidence, and 0 is no confidence (which may be expected for non-politically affiliated entities)

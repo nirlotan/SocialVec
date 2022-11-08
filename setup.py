@@ -48,7 +48,7 @@ setup(
     },
     install_requires=requirements,
     license="MIT license",
-    long_description=readme + '\n\n' + history,
+    # long_description=readme + '\n\n' + history,
     include_package_data=True,
     keywords='socialvec',
     name='socialvec',
@@ -56,6 +56,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/nirlotan/socialvec',
-    version='0.1.3',
+    version='0.1.4',
     zip_safe=False,
 )
