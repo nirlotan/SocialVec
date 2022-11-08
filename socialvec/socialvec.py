@@ -12,29 +12,30 @@ from sklearn.metrics.pairwise import cosine_similarity
 from tensorflow import keras
 
 class SocialVec():
-    def __init__(self, model_name="Default"):
+    def __init__(self, model_name="2020"):
 
         # Read configuration from config file
         current_folder = os.path.dirname(__file__)
         with open(os.path.join(current_folder, "config.yaml"), 'r') as f:
             self.config = yaml.load(f.read(), Loader=yaml.FullLoader)
 
-        if model_name == "Default":
-            model_name = self.config['models'][0]['name']
+        self.model_name = ""
+        for m in self.config['models']:
+            if m['name'] == model_name:
+                model_filename = m['filename']
+                model_path = m['download_url']
+                self.model_name = model_name
+        if self.model_name == "":
+            raise Exception("model not found")
 
-        if not os.path.exists(os.path.join(current_folder, model_name)):
-
-            for m in self.config['models']:
-                if m['name'] == model_name:
-                    model_path = m['remote_path']
-
+        if not os.path.exists(os.path.join(current_folder, model_filename)):
             # Load SocialVec model from the web
             print("First time model download")
             wget.download(model_path,
-                          os.path.join(current_folder,model_name))
+                          os.path.join(current_folder,model_filename))
 
         with yaspin(text="Initialize Model") as spinner:
-            with gzip.open(os.path.join(current_folder, model_name), 'rb') as pickle_file:
+            with gzip.open(os.path.join(current_folder, model_filename), 'rb') as pickle_file:
                 self.sv = pickle.load(pickle_file)
                 spinner.ok("✅ ")
 
@@ -234,52 +235,55 @@ class SocialVec():
 
         return cosine_similarity(v1.reshape(1, -1),v2.reshape(1, -1))[0][0]
 
+    def init_classifier(self):
+        self.classifier = self.SocialVecClassifier(self.model_name)
 
+    class SocialVecClassifier():
+        def __init__(self, model_name):
 
-class SocialVecClassifier():
-    def __init__(self):
+            # Read configuration from config file
+            current_folder = os.path.dirname(__file__)
+            with open(os.path.join(current_folder, "config.yaml"), 'r') as f:
+                self.config = yaml.load(f.read(), Loader=yaml.FullLoader)
 
-        # Read configuration from config file
-        current_folder = os.path.dirname(__file__)
-        with open(os.path.join(current_folder, "config.yaml"), 'r') as f:
-            self.config = yaml.load(f.read(), Loader=yaml.FullLoader)
-
-        model_name = self.config['classification_models'][0]['name']
-
-        if not os.path.exists(os.path.join(current_folder, model_name)):
-
+            self.model_name = ""
             for m in self.config['classification_models']:
                 if m['name'] == model_name:
-                    model_path = m['remote_path']
+                    model_filename = m['filename']
+                    self.model_name = model_name
+            if self.model_name == "":
+                raise Exception("model not found")        
 
-            # Load SocialVec model from the web
-            print("First time model download")
-            wget.download(model_path,
-                          os.path.join(current_folder,model_name))
+            if not os.path.exists(os.path.join(current_folder, model_filename)):
 
-        self.political_model = keras.models.load_model(os.path.join(current_folder,model_name))
+                # Load SocialVec model from the web
+                print("First time model download")
+                wget.download(model_path,
+                            os.path.join(current_folder,model_filename))
 
-    def predict_political_proba(self, v):
-        """
-        Return a number between 0 to 1 with the probabiliy in the selected class
-        :param v:
-        :type v:
-        :return:
-        :rtype:
-        """
-        return abs(self.political_model.predict(v.reshape(1, 100), verbose=False)[0][0] - 0.5)*2
+            self.political_model = keras.models.load_model(os.path.join(current_folder,model_filename))
 
-    def predict_political(self, v):
-        prediction = self.political_model.predict(v.reshape(1, 100), verbose=False)[0][0]
+        def predict_political_proba(self, v):
+            """
+            Return a number between 0 to 1 with the probabiliy in the selected class
+            :param v:
+            :type v:
+            :return:
+            :rtype:
+            """
+            return abs(self.political_model.predict(v.reshape(1, 100), verbose=False)[0][0] - 0.5)*2
 
-        # Original prediction is 0 for Democrat, 1 for Republican.
-        # We convert it here to a confidence interval between 0 to 1 for either of the classes
-        pred_proba = abs(prediction - 0.5)*2
+        def predict_political(self, v):
+            prediction = self.political_model.predict(v.reshape(1, 100), verbose=False)[0][0]
 
-        if round(prediction):
-            affiliation =  'Republican'
-        else:
-            affiliation = 'Democrat'
+            # Original prediction is 0 for Democrat, 1 for Republican.
+            # We convert it here to a confidence interval between 0 to 1 for either of the classes
+            pred_proba = abs(prediction - 0.5)*2
 
-        return (affiliation, pred_proba)
+            if round(prediction):
+                affiliation =  'Republican'
+            else:
+                affiliation = 'Democrat'
+
+            return (affiliation, pred_proba)
 
