@@ -8,4 +8,4 @@ wget>=3.2
 yaspin
 PyYAML
 gensim>4
-sklearn
+scikit-learn
