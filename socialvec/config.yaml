@@ -2,6 +2,9 @@ models:
     - name: "2020"
       filename: SocialVec2020.pkl.gz
       download_url: https://www.dropbox.com/s/lti8npc8r2l4wch/SocialVec2020.pkl.gz?dl=1
+    - name: "2020c"
+      filename: SocialVec2020c.pkl.gz
+      download_url: https://www.dropbox.com/scl/fi/1s1kay2z4a430lkz1erjn/SocialVec2020c.pkl.gz?rlkey=fcfbb83gkdb80ghivzt62ljmk&dl=1
     - name: "2020_2022"
       filename: SocialVec2020_2022.pkl.gz
       download_url: https://www.dropbox.com/s/5s9mykbwe0nxir6/SocialVec2020_2022.pkl.gz?dl=1
@@ -9,8 +12,33 @@ metadata:
     - name: metadata.parquet.gz
     - remote_path: https://www.dropbox.com/s/060xprg4emblqwu/metadata.parquet.gz?dl=1
 classification_models:
-    - name: "2020"
-      filename: SocialVec_political_2020.h5
-    - name: "2020_2022"
-      filename: SocialVec_political_2020_2022.h5
-
+  - name: "2020c"
+    classifiers:
+      - name: "political"
+        filename: "models/SocialVec_political_2022.h5"
+        class0: Republican
+        class1: Democrat
+      - name: "gender"
+        filename: "models/SocialVec_gender_2022.h5"
+        class0: Male
+        class1: Female
+      - name: "children"
+        filename: "models/SocialVec_children_2022.h5"
+        class0: "Yes"
+        class1: "No"
+      - name: "age"
+        filename: "models/SocialVec_age_2022.h5"
+        class0: Under25
+        class1: Over25
+      - name: "education"
+        filename: "models/SocialVec_education_2022.h5"
+        class0: Degree
+        class1: HighSchool
+      - name: "income"
+        filename: "models/SocialVec_income_2022.h5"
+        class0: High
+        class1: Low
+      - name: "ethnicity"
+        filename: "models/SocialVec_ethnicity_2022.h5"
+        class0: Caucasian
+        class1: AfrAmerican

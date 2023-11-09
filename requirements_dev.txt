@@ -16,5 +16,5 @@ setuptools>=60.2.0
 pandas>=1.5.0
 numpy>=1.23.3
 fastparquet>=0.8.3
-pyarrow==6.0.1
+pyarrow
 wget>=3.2

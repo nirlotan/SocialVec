@@ -9,7 +9,11 @@ from yaspin import yaspin
 #from gensim.models import Word2Vec
 import gzip
 from sklearn.metrics.pairwise import cosine_similarity
+import tensorflow as tf
 from tensorflow import keras
+from tensorflow.keras.utils import get_custom_objects
+from tensorflow.keras import backend as K
+from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 
 class SocialVec():
     def __init__(self, model_name="2020"):
@@ -34,7 +38,7 @@ class SocialVec():
             wget.download(model_path,
                           os.path.join(current_folder,model_filename))
 
-        with yaspin(text="Initialize Model") as spinner:
+        with yaspin(text="Initializing Model") as spinner:
             with gzip.open(os.path.join(current_folder, model_filename), 'rb') as pickle_file:
                 self.sv = pickle.load(pickle_file)
                 spinner.ok("✅ ")
@@ -246,24 +250,28 @@ class SocialVec():
             with open(os.path.join(current_folder, "config.yaml"), 'r') as f:
                 self.config = yaml.load(f.read(), Loader=yaml.FullLoader)
 
-            self.model_name = ""
+            get_custom_objects().update({'recall_m': self.recall_m})
+            get_custom_objects().update({'precision_m': self.precision_m})
+            get_custom_objects().update({'f1_m': self.f1_m})
+
+            self.models_dict = {}
+            self.models_classes = {}
+
             for m in self.config['classification_models']:
                 if m['name'] == model_name:
-                    model_filename = m['filename']
-                    self.model_name = model_name
-            if self.model_name == "":
-                raise Exception("model not found")        
+                    # Iterate through the classifiers for the current model entry
+                    for classifier in m['classifiers']:
+                        model_name = classifier['name']
+                        model_path = os.path.join(current_folder, classifier['filename'])
+                        if os.path.exists(model_path):
+                            self.models_dict[model_name] = keras.models.load_model(model_path)
+                            self.models_classes[classifier['name']] = {'class0': classifier['class0'],
+                                                                      'class1': classifier['class1']}
 
-            if not os.path.exists(os.path.join(current_folder, model_filename)):
+                        else:
+                            raise Exception(f"Configuration error: model {model_name} not found at {model_path}")
 
-                # Load SocialVec model from the web
-                print("First time model download")
-                wget.download(model_path,
-                            os.path.join(current_folder,model_filename))
-
-            self.political_model = keras.models.load_model(os.path.join(current_folder,model_filename))
-
-        def predict_political_proba(self, v):
+        def predict_proba(self, classifier_name, v):
             """
             Return a number between 0 to 1 with the probabiliy in the selected class
             :param v:
@@ -271,19 +279,40 @@ class SocialVec():
             :return:
             :rtype:
             """
-            return abs(self.political_model.predict(v.reshape(1, 100), verbose=False)[0][0] - 0.5)*2
+            param_to_predict = tf.convert_to_tensor(v.reshape(1, 100))
+            return abs(self.models_dict[classifier_name].predict(param_to_predict, verbose=False)[0][0] - 0.5)*2
 
-        def predict_political(self, v):
-            prediction = self.political_model.predict(v.reshape(1, 100), verbose=False)[0][0]
+        def predict(self, classifier_name ,v):
+            param_to_predict = tf.convert_to_tensor(v.reshape(1, 100))
+            prediction = self.models_dict[classifier_name].predict(param_to_predict, verbose=False)[0][0]
 
             # Original prediction is 0 for Democrat, 1 for Republican.
             # We convert it here to a confidence interval between 0 to 1 for either of the classes
             pred_proba = abs(prediction - 0.5)*2
 
             if round(prediction):
-                affiliation =  'Republican'
+                affiliation =  self.models_classes[classifier_name]['class0']
             else:
-                affiliation = 'Democrat'
+                affiliation =  self.models_classes[classifier_name]['class1']
 
             return (affiliation, pred_proba)
 
+        @staticmethod
+        def recall_m(y_true, y_pred):
+            true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+            possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
+            recall = true_positives / (possible_positives + K.epsilon())
+            return recall
+
+        @staticmethod
+        def precision_m(y_true, y_pred):
+            true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+            predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
+            precision = true_positives / (predicted_positives + K.epsilon())
+            return precision
+
+        @staticmethod
+        def f1_m(y_true, y_pred):
+            precision = self.precision_m(y_true, y_pred)
+            recall = self.recall_m(y_true, y_pred)
+            return 2*((precision*recall)/(precision+recall+K.epsilon()))
