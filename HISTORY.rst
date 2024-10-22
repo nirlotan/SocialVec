@@ -34,3 +34,7 @@ History
 0.1.6 (2023-11-09)
 ------------------
 * Modify requirements to support more up-to-date python versions
+
+0.1.7 (2024-10-22)
+------------------
+* Add the option to load the model to the ran in case there is no write permission to the package folder (which resolves streamlit share and similar cloud solutions issues)

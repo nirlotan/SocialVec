@@ -14,6 +14,7 @@ from tensorflow import keras
 from tensorflow.keras.utils import get_custom_objects
 from tensorflow.keras import backend as K
 from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
+import requests, io
 
 class SocialVec():
     def __init__(self, model_name="2020"):
@@ -32,25 +33,45 @@ class SocialVec():
         if self.model_name == "":
             raise Exception("model not found")
 
-        if not os.path.exists(os.path.join(current_folder, model_filename)):
-            # Load SocialVec model from the web
-            print("First time model download")
-            wget.download(model_path,
-                          os.path.join(current_folder,model_filename))
+        if os.access(current_folder, os.W_OK):
+            loading_model_path = os.path.join(current_folder, model_filename)
+            if not os.path.exists(os.path.join(current_folder, model_filename)):
+                with yaspin(text="First time model download..") as spinner:
+                    wget.download(model_path, loading_model_path)
+                    spinner.ok("✅ ")
 
-        with yaspin(text="Initializing Model") as spinner:
-            with gzip.open(os.path.join(current_folder, model_filename), 'rb') as pickle_file:
-                self.sv = pickle.load(pickle_file)
+            with yaspin(text="Initializing Model") as spinner:
+                with gzip.open(loading_model_path, 'rb') as pickle_file:
+                    self.sv = pickle.load(pickle_file)
+                    spinner.ok("✅ ")
+
+        else:
+            with yaspin(text="No Write permission, Loading model to RAM") as spinner:
+                loading_model_url  = m['download_url']
+                # Download the file into memory
+                response = requests.get(loading_model_url, stream=True)
+                response.raise_for_status()  # Ensure the request was successful
+
+                # Use io.BytesIO to create an in-memory binary stream
+                file_in_memory = io.BytesIO(response.content)
+
+                # Open the gzip file from the memory stream
+                with gzip.open(file_in_memory, 'rb') as pickle_file:
+                    # Your code to read the pickle file
+                    self.sv = pickle.load(pickle_file)
                 spinner.ok("✅ ")
 
+
+        metadata_path = os.path.join(current_folder, self.config['metadata'][0]['name'])
         if not os.path.exists(os.path.join(current_folder, self.config['metadata'][0]['name'])):
-            # Load SocialVec metadata from the web
-            print("First time metadata download")
-            wget.download(self.config['metadata'][1]['remote_path'],
-                          os.path.join(current_folder,self.config['metadata'][0]['name']))
+            if os.access(current_folder, os.W_OK):
+                print("First time metadata download")
+                wget.download(self.config['metadata'][1]['remote_path'], metadata_path)
+            else:
+                metadata_path = self.config['metadata'][1]['remote_path']
 
         with yaspin(text="Load Metadata") as spinner:
-            self.entities = pd.read_parquet(os.path.join(current_folder, self.config['metadata'][0]['name']),
+            self.entities = pd.read_parquet(metadata_path,
                                             engine="fastparquet")
             spinner.ok("✅ ")
 
