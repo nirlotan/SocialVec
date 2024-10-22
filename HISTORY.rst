@@ -1,6 +1,5 @@
-=======
 History
-=======
+-------
 
 0.1.0 (2022-09-29)
 ------------------
@@ -15,7 +14,7 @@ History
 0.1.2 (2022-10-02)
 ------------------
 
-* reaarange config.yaml
+* Rearrange config.yaml
 * Support multiple versions of the SocialVec model
 * Fix bug when searching for similarity using username
 
@@ -37,4 +36,8 @@ History
 
 0.1.7 (2024-10-22)
 ------------------
-* Add the option to load the model to the ran in case there is no write permission to the package folder (which resolves streamlit share and similar cloud solutions issues)
+* Add the option to load the model to RAM in case there is no write permission to the package folder (which
+
+0.1.7.1 (2024-10-22)
+--------------------
+* Add pypi documentation

@@ -43,6 +43,8 @@ setup(
         'Programming Language :: Python :: 3.11',
     ],
     description="SocialVec is a framework of Social Embeddings for eliciting social world knowledge from social networks.",
+    long_description=readme + '\n\n' + history,
+    long_description_content_type='text/x-rst',
     entry_points={
         'console_scripts': [
             'socialvec=socialvec.cli:main',
@@ -59,6 +61,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/nirlotan/socialvec',
-    version='0.1.7',
+    version='0.1.7.1',
     zip_safe=False,
 )
