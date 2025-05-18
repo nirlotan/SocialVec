@@ -33,31 +33,41 @@ class SocialVec():
         if self.model_name == "":
             raise Exception("model not found")
 
+
+        # Try to download to current_folder if possible
+        loading_model_path = None
+
+        # 1. Try current_folder
         if os.access(current_folder, os.W_OK):
             loading_model_path = os.path.join(current_folder, model_filename)
-            if not os.path.exists(os.path.join(current_folder, model_filename)):
-                with yaspin(text="First time model download..") as spinner:
-                    wget.download(model_path, loading_model_path)
-                    spinner.ok("✅ ")
-
-            with yaspin(text="Initializing Model") as spinner:
-                with gzip.open(loading_model_path, 'rb') as pickle_file:
-                    self.sv = pickle.load(pickle_file)
-                    spinner.ok("✅ ")
-
         else:
+            # 2. Try script's working directory
+            script_cwd = os.getcwd()
+            if os.access(script_cwd, os.W_OK):
+                loading_model_path = os.path.join(script_cwd, model_filename)
+
+        if loading_model_path is not None:
+            if not os.path.exists(loading_model_path):
+                with yaspin(text=f"First time model download to {loading_model_path}..") as spinner:
+                    try:
+                        wget.download(model_path, loading_model_path)
+                        spinner.ok("✅ ")
+                    except Exception as e:
+                        spinner.fail("❌ ")
+                        loading_model_path = None
+            if loading_model_path is not None and os.path.exists(loading_model_path):
+                with yaspin(text="Initializing Model") as spinner:
+                    with gzip.open(loading_model_path, 'rb') as pickle_file:
+                        self.sv = pickle.load(pickle_file)
+                        spinner.ok("✅ ")
+        else:
+            # No writable folder, load to RAM
             with yaspin(text="No Write permission, Loading model to RAM") as spinner:
                 loading_model_url  = m['download_url']
-                # Download the file into memory
                 response = requests.get(loading_model_url, stream=True)
-                response.raise_for_status()  # Ensure the request was successful
-
-                # Use io.BytesIO to create an in-memory binary stream
+                response.raise_for_status()
                 file_in_memory = io.BytesIO(response.content)
-
-                # Open the gzip file from the memory stream
                 with gzip.open(file_in_memory, 'rb') as pickle_file:
-                    # Your code to read the pickle file
                     self.sv = pickle.load(pickle_file)
                 spinner.ok("✅ ")
 
