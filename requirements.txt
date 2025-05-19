@@ -10,3 +10,5 @@ PyYAML
 gensim>4
 scikit-learn
 tensorflow
+flask
+flask-cors

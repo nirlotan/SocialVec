@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
 from socialvec.socialvec import SocialVec
 import numpy as np
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 sv = SocialVec()
 
 @app.route('/validate_userid', methods=['GET'])
