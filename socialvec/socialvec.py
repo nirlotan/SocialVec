@@ -1,92 +1,50 @@
 """Main module."""
-import numbers
-import pandas as pd
-import numpy as np
-import pickle
-import yaml
-import os
-import wget
-from yaspin import yaspin
-#from gensim.models import Word2Vec
 import gzip
-from sklearn.metrics.pairwise import cosine_similarity
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras.utils import get_custom_objects
-from tensorflow.keras import backend as K
-from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
-import requests, io
+import numbers
+import os
+import pickle
 
-from .exceptions import SocialVecError, InvalidUserIdError, UserNotFoundError
+import numpy as np
+import pandas as pd
+import yaml
+from sklearn.metrics.pairwise import cosine_similarity
+from yaspin import yaspin
+
+from ._download import fetch
+from .exceptions import SocialVecError, InvalidUserIdError, UnknownModelError, UserNotFoundError
+
+# TensorFlow is only needed by SocialVecClassifier, which imports it when it is created,
+# so the embeddings can be used without TensorFlow installed.
+
+
+def _read_config():
+    with open(os.path.join(os.path.dirname(__file__), "config.yaml"), 'r') as f:
+        return yaml.safe_load(f)
 
 
 class SocialVec():
     def __init__(self, model_name="2020"):
 
-        # Read configuration from config file
-        current_folder = os.path.dirname(__file__)
-        with open(os.path.join(current_folder, "config.yaml"), 'r') as f:
-            self.config = yaml.load(f.read(), Loader=yaml.FullLoader)
+        self.config = _read_config()
 
-        self.model_name = ""
-        for m in self.config['models']:
-            if m['name'] == model_name:
-                model_filename = m['filename']
-                model_path = m['download_url']
-                self.model_name = model_name
-        if self.model_name == "":
-            raise Exception("model not found")
+        entry = next((m for m in self.config['models'] if m['name'] == model_name), None)
+        if entry is None:
+            available = [m['name'] for m in self.config['models']]
+            raise UnknownModelError(f"Unknown SocialVec model {model_name!r}; available models: {available}")
+        self.model_name = model_name
 
+        model_file = fetch(entry['filename'], entry['download_url'], entry.get('sha256'),
+                           label=f"SocialVec {model_name} model")
+        with yaspin(text="Initializing Model") as spinner:
+            with gzip.open(model_file, 'rb') as pickle_file:
+                self.sv = pickle.load(pickle_file)
+            spinner.ok("✅ ")
 
-        # Try to download to current_folder if possible
-        loading_model_path = None
-
-        # 1. Try current_folder
-        if os.access(current_folder, os.W_OK):
-            loading_model_path = os.path.join(current_folder, model_filename)
-        else:
-            # 2. Try script's working directory
-            script_cwd = os.getcwd()
-            if os.access(script_cwd, os.W_OK):
-                loading_model_path = os.path.join(script_cwd, model_filename)
-
-        if loading_model_path is not None:
-            if not os.path.exists(loading_model_path):
-                with yaspin(text=f"First time model download to {loading_model_path}..") as spinner:
-                    try:
-                        wget.download(model_path, loading_model_path)
-                        spinner.ok("✅ ")
-                    except Exception as e:
-                        spinner.fail("❌ ")
-                        loading_model_path = None
-            if loading_model_path is not None and os.path.exists(loading_model_path):
-                with yaspin(text="Initializing Model") as spinner:
-                    with gzip.open(loading_model_path, 'rb') as pickle_file:
-                        self.sv = pickle.load(pickle_file)
-                        spinner.ok("✅ ")
-        else:
-            # No writable folder, load to RAM
-            with yaspin(text="No Write permission, Loading model to RAM") as spinner:
-                loading_model_url  = m['download_url']
-                response = requests.get(loading_model_url, stream=True)
-                response.raise_for_status()
-                file_in_memory = io.BytesIO(response.content)
-                with gzip.open(file_in_memory, 'rb') as pickle_file:
-                    self.sv = pickle.load(pickle_file)
-                spinner.ok("✅ ")
-
-
-        metadata_path = os.path.join(current_folder, self.config['metadata'][0]['name'])
-        if not os.path.exists(os.path.join(current_folder, self.config['metadata'][0]['name'])):
-            if os.access(current_folder, os.W_OK):
-                print("First time metadata download")
-                wget.download(self.config['metadata'][1]['remote_path'], metadata_path)
-            else:
-                metadata_path = self.config['metadata'][1]['remote_path']
-
+        metadata = self.config['metadata']
+        metadata_file = fetch(metadata['filename'], metadata['download_url'], metadata.get('sha256'),
+                              label="SocialVec metadata")
         with yaspin(text="Load Metadata") as spinner:
-            self.entities = pd.read_parquet(metadata_path,
-                                            engine="fastparquet")
+            self.entities = pd.read_parquet(metadata_file, engine="fastparquet")
             spinner.ok("✅ ")
 
         self._build_lookup_tables()
@@ -345,10 +303,8 @@ class SocialVec():
     class SocialVecClassifier():
         def __init__(self, model_name):
 
-            # Read configuration from config file
             current_folder = os.path.dirname(__file__)
-            with open(os.path.join(current_folder, "config.yaml"), 'r') as f:
-                self.config = yaml.load(f.read(), Loader=yaml.FullLoader)
+            self.config = _read_config()
 
             # Classifiers are trained on one model's embedding space and can't be used with another
             entry = next((m for m in self.config['classification_models'] if m['name'] == model_name), None)
@@ -358,9 +314,18 @@ class SocialVec():
                     f"No classifiers are available for model '{model_name}'. "
                     f"Classifiers exist for: {available}, e.g. SocialVec(model_name='{available[0]}')")
 
-            get_custom_objects().update({'recall_m': self.recall_m})
-            get_custom_objects().update({'precision_m': self.precision_m})
-            get_custom_objects().update({'f1_m': self.f1_m})
+            try:
+                import tensorflow as tf
+                from tensorflow import keras
+            except ImportError as e:
+                raise SocialVecError(
+                    "The SocialVec classifiers need TensorFlow, which could not be imported "
+                    f"({e}). Install it with: pip install 'socialvec[classifier]'") from e
+            self._tf = tf
+
+            keras.utils.get_custom_objects().update({'recall_m': self.recall_m,
+                                                     'precision_m': self.precision_m,
+                                                     'f1_m': self.f1_m})
 
             self.models_dict = {}
             self.models_classes = {}
@@ -384,7 +349,7 @@ class SocialVec():
                 raise SocialVecError(
                     f"Unknown classifier {classifier_name!r}; available: {self.classifier_names}")
             model = self.models_dict[classifier_name]
-            param_to_predict = tf.convert_to_tensor(np.asarray(v, dtype=np.float32).reshape(1, -1))
+            param_to_predict = self._tf.convert_to_tensor(np.asarray(v, dtype=np.float32).reshape(1, -1))
             return model.predict(param_to_predict, verbose=False)[0][0]
 
         def predict_proba(self, classifier_name, v):
@@ -419,8 +384,11 @@ class SocialVec():
 
             return (affiliation, pred_proba)
 
+        # Custom metrics the classifiers were saved with; Keras needs them to load the .h5 files.
+
         @staticmethod
         def recall_m(y_true, y_pred):
+            from tensorflow.keras import backend as K
             true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
             possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
             recall = true_positives / (possible_positives + K.epsilon())
@@ -428,6 +396,7 @@ class SocialVec():
 
         @staticmethod
         def precision_m(y_true, y_pred):
+            from tensorflow.keras import backend as K
             true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
             predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
             precision = true_positives / (predicted_positives + K.epsilon())
@@ -435,6 +404,7 @@ class SocialVec():
 
         @staticmethod
         def f1_m(y_true, y_pred):
+            from tensorflow.keras import backend as K
             precision = SocialVec.SocialVecClassifier.precision_m(y_true, y_pred)
             recall = SocialVec.SocialVecClassifier.recall_m(y_true, y_pred)
             return 2*((precision*recall)/(precision+recall+K.epsilon()))
