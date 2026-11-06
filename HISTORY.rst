@@ -54,6 +54,14 @@ Unreleased
 * ``init_classifier()`` raises a clear error for models with no classifiers (classifiers are only available for ``2020c``), and ``predict`` raises one for unknown classifier names.
 * Fix ``f1_m`` (it referred to ``self`` from a static method).
 * Remove the hard-coded vector size of 100.
+* API (``socialvec.api``):
+
+  * The model is chosen with ``SOCIALVEC_MODEL`` (default ``2020``). ``/predict`` and ``/predict_proba`` need ``2020c``, and return 501 with an explanation on other models instead of failing on every request.
+  * Classifiers are loaded once when the app is created, not lazily on the first request.
+  * App setup moved into ``create_app()``; importing the module no longer downloads or loads a model. ``python -m socialvec.api`` still works.
+  * Listens on ``127.0.0.1`` by default instead of ``0.0.0.0``; set ``SOCIALVEC_HOST`` and ``PORT`` to change it. Allowed CORS origins come from ``SOCIALVEC_CORS_ORIGINS`` (default ``*``).
+  * Errors: 400 for invalid input (including a non-integer ``topn`` and missing or non-JSON bodies), 404 for users not in the model, and a generic 500 for unexpected errors, which are logged instead of returned to the client.
+  * ``/get_similar`` clamps ``topn`` to 1-100 and returns ``application/json``.
 * Downloaded models and metadata are now kept in ``~/.cache/socialvec`` (or the folder in the ``SOCIALVEC_HOME`` environment variable) instead of the package folder. Files that older versions saved in the package folder or the working folder are still used, so they are not downloaded again.
 * Downloads are checked against a SHA-256 checksum before they are loaded.
 * A failed download now raises ``SocialVecError`` instead of leaving a broken ``SocialVec`` object that fails later with ``AttributeError``.
