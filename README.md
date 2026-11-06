@@ -10,10 +10,12 @@ pip install socialvec
 ```
 ## Initialization
 
-Upon initialization, you can either create a new SocialVec instance with the default configuration, or select a specific version of the model.
-Currenly available version are:
-* SocialVec2020.pkl.gz
-* SocialVec2020_2022.pkl.gz
+Upon initialization, you can either create a new SocialVec instance with the default configuration, or select a specific version of the model with `SocialVec(model_name=...)`.
+Currently available versions are:
+* `"2020"` (default)
+* `"2020c"` (required for the classifiers, see below)
+* `"2020_2022"`
+
 If this is the first time you are using SocialVec and one of these models, the library will download the model binaries to your machine.
 In following usages, download will not be required, and the loading time will be significantly shorter.
 
@@ -158,9 +160,11 @@ When we want to get the embeddings of a user that is not a popular entity, we co
 
 ** This function currently only supports getting a list of user IDs **
 
+It returns a tuple of the average vector and the number of accounts it was based on. IDs that are not in the model are skipped; if none are left, the vector is all zeros and the count is 0.
+
 
 ```python
-v = sv.get_average_embeddings([1, sv.get_userid('jack')], 989)
+v = sv.get_average_embeddings([1, sv.get_userid('jack'), 989])
 sv.get_similar(v[0])
 ```
 
@@ -495,13 +499,14 @@ sv.get_similar(sports_ids)
 
 ## Initialization
 
-SocialVecClassifier is part of the socialvec package, so no additional installation is needed, however you need to initiate it seperately after creating the SocialVec object:
+SocialVecClassifier is part of the socialvec package, so no additional installation is needed, however you need to initiate it separately after creating the SocialVec object.
+
+The classifiers were trained on the `"2020c"` model, so create the SocialVec object with that model. Calling `init_classifier()` on another model raises an error.
 
 ```python
 
-# create a SocialVec object as decribed above
 from socialvec.socialvec import SocialVec
-sv = SocialVec()
+sv = SocialVec(model_name="2020c")
 
 #init the classifier
 sv.init_classifier()
@@ -513,11 +518,27 @@ Get political classification for a user, using its SocialVec vector:
 
 ```python
 
-# The classifier gets a SocialVec embedding vector as input, e.g.:
-sv.classifier.predict_political( sv['JoeBiden'] )
+# The classifier gets a classifier name and a SocialVec embedding vector, e.g.:
+sv.classifier.predict("political", sv['JoeBiden'])
 
 #or:
-sv.classifier.predict_political( sv['realDonaldTrump'] )
+sv.classifier.predict("political", sv['realDonaldTrump'])
 
 ```
-predict_political will return a Republican/Democrat classification, including confidence interval between 0 to 1, where 1 is high confidence, and 0 is no confidence (which may be expected for non-politically affiliated entities)
+`predict` returns a tuple of the class (here Republican/Democrat) and a confidence between 0 and 1, where 1 is high confidence, and 0 is no confidence (which may be expected for non-politically affiliated entities).
+
+Available classifiers (`sv.classifier.classifier_names`):
+
+| Classifier | Classes |
+|---|---|
+| `political` | Republican / Democrat |
+| `gender` | Male / Female |
+| `children` | Yes / No |
+| `age` | Under25 / Over25 |
+| `education` | Degree / HighSchool |
+| `income` | High / Low |
+| `ethnicity` | Caucasian / AfrAmerican |
+
+## Errors
+
+Lookups raise `socialvec.exceptions.InvalidUserIdError` (a `ValueError`) for values that aren't a user ID or username, and `socialvec.exceptions.UserNotFoundError` (a `KeyError`) for users that aren't in the loaded model. Both subclass `socialvec.exceptions.SocialVecError`.

@@ -41,3 +41,16 @@ History
 0.1.7.1 (2024-10-22)
 --------------------
 * Add pypi documentation
+
+Unreleased
+----------
+* User IDs given as numpy integers (e.g. ``np.int64``) now work everywhere; ``get_average_embeddings`` no longer silently drops them.
+* Errors are now ``socialvec.exceptions.InvalidUserIdError`` (a ``ValueError``) and ``UserNotFoundError`` (a ``KeyError``), both subclasses of ``SocialVecError``, instead of a bare ``Exception``.
+* Looking up a username that is in the metadata but not in the loaded model raises ``UserNotFoundError`` instead of gensim's ``KeyError``.
+* When several accounts share a screen name, the one that is in the loaded model is used.
+* Username lookups are now a dictionary lookup instead of a scan of the whole metadata table.
+* ``get_screen_name`` returns ``None`` for users that are in the model but have no metadata, instead of raising ``IndexError``.
+* ``get_similar`` accepts a list of usernames as well as user IDs.
+* ``init_classifier()`` raises a clear error for models with no classifiers (classifiers are only available for ``2020c``), and ``predict`` raises one for unknown classifier names.
+* Fix ``f1_m`` (it referred to ``self`` from a static method).
+* Remove the hard-coded vector size of 100.
