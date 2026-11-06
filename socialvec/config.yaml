@@ -2,15 +2,19 @@ models:
     - name: "2020"
       filename: SocialVec2020.pkl.gz
       download_url: https://www.dropbox.com/s/lti8npc8r2l4wch/SocialVec2020.pkl.gz?dl=1
+      sha256: 7a820239ced548010c4da0354f662feca1b1388a224ff3a672834d85dc2167ad
     - name: "2020c"
       filename: SocialVec2020c.pkl.gz
       download_url: https://www.dropbox.com/scl/fi/1s1kay2z4a430lkz1erjn/SocialVec2020c.pkl.gz?rlkey=fcfbb83gkdb80ghivzt62ljmk&dl=1
+      sha256: 979c5b55fc2197a001a1cc538bbd185ab40cf9257b68f6170f4a145caa12f645
     - name: "2020_2022"
       filename: SocialVec2020_2022.pkl.gz
       download_url: https://www.dropbox.com/s/5s9mykbwe0nxir6/SocialVec2020_2022.pkl.gz?dl=1
+      sha256: 7719b179778feb1d9c781ac0608413fb07638a9e95a2beea9bdabf560032181a
 metadata:
-    - name: metadata.parquet.gz
-    - remote_path: https://www.dropbox.com/s/060xprg4emblqwu/metadata.parquet.gz?dl=1
+    filename: metadata.parquet.gz
+    download_url: https://www.dropbox.com/s/060xprg4emblqwu/metadata.parquet.gz?dl=1
+    sha256: ffd6d9143b3665072d9862ca232f05ef21a2198f58522cfb37b918e77fc91902
 classification_models:
   - name: "2020c"
     classifiers:

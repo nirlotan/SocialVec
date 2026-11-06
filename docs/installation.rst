@@ -19,6 +19,16 @@ This is the preferred method to install SocialVec, as it will always install the
 If you don't have `pip`_ installed, this `Python installation guide`_ can guide
 you through the process.
 
+The classifiers need TensorFlow and the API server needs Flask; install them with the optional extras:
+
+.. code-block:: console
+
+    $ pip install "socialvec[classifier]"
+    $ pip install "socialvec[api]"
+
+The models and metadata are downloaded on first use to ``~/.cache/socialvec``.
+Set the ``SOCIALVEC_HOME`` environment variable to keep them in another folder.
+
 .. _pip: https://pip.pypa.io
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 
