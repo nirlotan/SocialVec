@@ -1,0 +1,59 @@
+name: Publish
+
+# Uploads to PyPI when a GitHub release is published.
+# Uses PyPI trusted publishing: no API token is stored in the repository.
+# One-time setup on pypi.org (project "socialvec" > Settings > Publishing):
+# add a GitHub publisher with owner "nirlotan", repository "SocialVec",
+# workflow "publish.yml" and environment "pypi".
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+          twine check --strict dist/*
+
+      - name: Check the version matches the release tag
+        if: github.event_name == 'release'
+        run: |
+          version=$(python -c "import re; print(re.search(r\"__version__ = '(.+)'\", open('socialvec/__init__.py').read()).group(1))")
+          test "v$version" = "${{ github.event.release.tag_name }}" || { echo "Tag ${{ github.event.release.tag_name }} doesn't match version $version"; exit 1; }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/socialvec/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1

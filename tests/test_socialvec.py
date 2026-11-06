@@ -9,6 +9,7 @@ so the models are loaded once per test class rather than once per test.
 
 import importlib.util
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 from click.testing import CliRunner
@@ -120,15 +121,12 @@ class TestSocialvec(unittest.TestCase):
         with self.assertRaises(SocialVecError):
             self.SocialVec.init_classifier()
 
-    def test_command_line_interface(self):
-        """Test the CLI."""
-        runner = CliRunner()
-        result = runner.invoke(cli.main)
-        assert result.exit_code == 0
-        assert 'socialvec.cli.main' in result.output
-        help_result = runner.invoke(cli.main, ['--help'])
-        assert help_result.exit_code == 0
-        assert '--help  Show this message and exit.' in help_result.output
+    def test_command_line_similar(self):
+        """The CLI against the real model; other CLI tests are in test_cli.py."""
+        with patch("socialvec.cli._load", return_value=self.SocialVec):
+            result = CliRunner().invoke(cli.main, ["similar", "Harvard", "-n", "3"])
+        self.assertEqual(0, result.exit_code, result.output)
+        self.assertIn("screen_name", result.output)
 
 
 @unittest.skipUnless(HAS_TENSORFLOW, "tensorflow is not installed")

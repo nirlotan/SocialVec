@@ -36,14 +36,36 @@ History
 
 0.1.7 (2024-10-22)
 ------------------
-* Add the option to load the model to RAM in case there is no write permission to the package folder (which
+* Add the option to load the model to RAM in case there is no write permission to the package folder.
 
 0.1.7.1 (2024-10-22)
 --------------------
 * Add pypi documentation
 
-Unreleased
-----------
+0.2.0 (2026-11-06)
+------------------
+
+Highlights: many lookup bugs fixed, safer and cached downloads, optional TensorFlow
+and Flask, a hardened HTTP API, and a real command line.
+
+Breaking changes:
+
+* Downloaded models and metadata are now kept in ``~/.cache/socialvec`` (see below). Files
+  saved by older versions are still found, so nothing is downloaded again.
+* TensorFlow is no longer installed by default; install ``socialvec[classifier]`` for the
+  classifiers. Flask is in ``socialvec[api]``.
+* Errors are specific exception classes (all subclasses of ``SocialVecError``) instead of a
+  bare ``Exception``.
+* ``validate_username`` and ``sv[name]`` raise ``UserNotFoundError`` for accounts that are
+  only in the metadata, not in the loaded model.
+* ``socialvec.api`` no longer loads a model when imported (use ``create_app()``), and
+  listens on ``127.0.0.1`` by default.
+* Python 3.8 is no longer supported.
+
+All changes:
+
+* New ``socialvec`` command line: ``similar``, ``similarity``, ``predict`` and ``download``.
+* The README is now the PyPI project description, with up-to-date examples and a citation.
 * User IDs given as numpy integers (e.g. ``np.int64``) now work everywhere; ``get_average_embeddings`` no longer silently drops them.
 * Errors are now ``socialvec.exceptions.InvalidUserIdError`` (a ``ValueError``) and ``UserNotFoundError`` (a ``KeyError``), both subclasses of ``SocialVecError``, instead of a bare ``Exception``.
 * Looking up a username that is in the metadata but not in the loaded model raises ``UserNotFoundError`` instead of gensim's ``KeyError``.

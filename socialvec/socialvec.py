@@ -201,8 +201,7 @@ class SocialVec():
 
         Parameters
         ----------
-        input : a user ID, a username, an embedding vector, or a list of
-                user IDs / usernames (whose embeddings are averaged)
+        input : a user ID, a username, an embedding vector, or a list of user IDs / usernames (whose embeddings are averaged)
         topn : requested number of similar entities
 
         Returns

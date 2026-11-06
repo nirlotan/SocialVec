@@ -42,20 +42,27 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/nirlotan/socialvec
+    $ git clone https://github.com/nirlotan/SocialVec.git
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl -OJL https://github.com/nirlotan/socialvec/tarball/master
+    $ curl -OJL https://github.com/nirlotan/SocialVec/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
 .. code-block:: console
 
-    $ python setup.py install
+    $ pip install .
+
+For development, install it in editable mode with the development tools:
+
+.. code-block:: console
+
+    $ pip install -r requirements_dev.txt -e ".[classifier,api]"
+    $ pytest
 
 
-.. _Github repo: https://github.com/nirlotan/socialvec
-.. _tarball: https://github.com/nirlotan/socialvec/tarball/master
+.. _Github repo: https://github.com/nirlotan/SocialVec
+.. _tarball: https://github.com/nirlotan/SocialVec/tarball/master
