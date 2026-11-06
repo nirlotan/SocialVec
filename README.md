@@ -539,6 +539,27 @@ Available classifiers (`sv.classifier.classifier_names`):
 | `income` | High / Low |
 | `ethnicity` | Caucasian / AfrAmerican |
 
+## HTTP API
+
+SocialVec includes a small Flask API (install `flask` and `flask-cors` to use it):
+
+```bash
+SOCIALVEC_MODEL=2020c python -m socialvec.api
+```
+
+It can also run under a WSGI server, e.g. `gunicorn "socialvec.api:create_app()"`. Importing `socialvec.api` does not load a model; `create_app()` does.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `SOCIALVEC_MODEL` | `2020` | Model to load. `/predict` and `/predict_proba` need `2020c`; with other models they return 501. |
+| `SOCIALVEC_CORS_ORIGINS` | `*` | Comma-separated origins allowed to call the API from a browser. |
+| `SOCIALVEC_HOST` | `127.0.0.1` | Address to listen on. Use `0.0.0.0` to accept connections from other machines. |
+| `PORT` | `8000` | Port to listen on. |
+
+Endpoints: `GET /validate_userid?userid=`, `/validate_username?username=`, `/get_screen_name?userid=`, `/get_userid?username=`, `/get_similar?input=&topn=` (`topn` is clamped to 1–100), `/get_embeddings?entity=`, `/get_similarity?entity1=&entity2=`; `POST` (JSON body) `/get_average_embeddings` `{"entity_list": [...]}`, `/predict` and `/predict_proba` `{"classifier_name": "political", "entity": "jack"}`.
+
+Errors are returned as `{"error": "..."}` with status 400 for bad input, 404 for users not in the model, and 500 (with no details) for unexpected errors, which are logged.
+
 ## Errors
 
 Lookups raise `socialvec.exceptions.InvalidUserIdError` (a `ValueError`) for values that aren't a user ID or username, and `socialvec.exceptions.UserNotFoundError` (a `KeyError`) for users that aren't in the loaded model. Both subclass `socialvec.exceptions.SocialVecError`.
