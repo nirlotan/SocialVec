@@ -60,7 +60,7 @@ Breaking changes:
   only in the metadata, not in the loaded model.
 * ``socialvec.api`` no longer loads a model when imported (use ``create_app()``), and
   listens on ``127.0.0.1`` by default.
-* Python 3.8 is no longer supported.
+* Python 3.8 and 3.9 are no longer supported (both have reached end of life); 3.10 to 3.13 are.
 
 All changes:
 

@@ -31,7 +31,7 @@ pip install "socialvec[api]"               # adds Flask and flask-cors
 pip install "socialvec[classifier,api]"    # both
 ```
 
-SocialVec supports Python 3.9 to 3.12.
+SocialVec supports Python 3.10 to 3.13.
 
 ## Quick start
 

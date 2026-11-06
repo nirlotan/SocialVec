@@ -14,6 +14,12 @@ from unittest import mock
 import numpy as np
 import pandas as pd
 
+try:
+    import flask  # noqa: F401
+    import flask_cors  # noqa: F401
+except ImportError:
+    raise unittest.SkipTest("the API needs Flask: pip install 'socialvec[api]'")
+
 from socialvec import api
 from socialvec.exceptions import InvalidUserIdError, SocialVecError, UserNotFoundError
 
