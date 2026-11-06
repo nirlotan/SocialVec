@@ -15,3 +15,7 @@ class UserNotFoundError(SocialVecError, KeyError):
     def __str__(self):
         # KeyError wraps its message in quotes; show it like a normal error.
         return str(self.args[0]) if self.args else ""
+
+
+class UnknownModelError(SocialVecError, ValueError):
+    """The requested SocialVec model name is not in the configuration."""

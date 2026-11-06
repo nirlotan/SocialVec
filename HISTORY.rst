@@ -54,3 +54,12 @@ Unreleased
 * ``init_classifier()`` raises a clear error for models with no classifiers (classifiers are only available for ``2020c``), and ``predict`` raises one for unknown classifier names.
 * Fix ``f1_m`` (it referred to ``self`` from a static method).
 * Remove the hard-coded vector size of 100.
+* Downloaded models and metadata are now kept in ``~/.cache/socialvec`` (or the folder in the ``SOCIALVEC_HOME`` environment variable) instead of the package folder. Files that older versions saved in the package folder or the working folder are still used, so they are not downloaded again.
+* Downloads are checked against a SHA-256 checksum before they are loaded.
+* A failed download now raises ``SocialVecError`` instead of leaving a broken ``SocialVec`` object that fails later with ``AttributeError``.
+* Fix loading the wrong model (always ``2020_2022``) when the package folder was not writable.
+* The metadata is downloaded once and cached, instead of being read from Dropbox every time when the package folder was not writable.
+* An unknown ``model_name`` raises ``UnknownModelError`` (a ``ValueError``) listing the available models.
+* TensorFlow is now an optional extra: ``pip install "socialvec[classifier]"``. The embeddings work without it; ``init_classifier()`` raises a clear error if it is missing. Flask is an optional extra too: ``pip install "socialvec[api]"``.
+* ``wget`` is no longer a dependency; downloads use ``requests``.
+* Packaging: ship ``config.yaml`` and the classifier ``.h5`` files in the package, and never the downloaded models.

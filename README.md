@@ -5,8 +5,16 @@ SocialVec is a general framework of Social Embeddings for eliciting social world
 **_New:_** SocialVec is now a library you can import and use!
 
 ## Installation
-```python
+```bash
 pip install socialvec
+```
+
+The classifiers (see [SocialVecClassifier](#socialvecclassifier)) need TensorFlow, and the Flask API server needs Flask. Both are optional extras:
+
+```bash
+pip install "socialvec[classifier]"        # adds TensorFlow
+pip install "socialvec[api]"               # adds Flask and flask-cors
+pip install "socialvec[classifier,api]"    # both
 ```
 ## Initialization
 
@@ -16,8 +24,13 @@ Currently available versions are:
 * `"2020c"` (required for the classifiers, see below)
 * `"2020_2022"`
 
-If this is the first time you are using SocialVec and one of these models, the library will download the model binaries to your machine.
+If this is the first time you are using SocialVec and one of these models, the library will download the model (about 150 MB, 300 MB for `"2020_2022"`) and the accounts metadata (about 30 MB) to your machine.
 In following usages, download will not be required, and the loading time will be significantly shorter.
+
+Downloaded files are kept in `~/.cache/socialvec`. To keep them somewhere else, set the `SOCIALVEC_HOME` environment variable to a folder before creating the `SocialVec` object.
+Files that older versions saved in the package folder or in the working folder are still found and used.
+Every file is checked against a SHA-256 checksum before it is loaded. If the cache folder can't be written, the model is loaded into memory instead (and downloaded again next time).
+If a download fails, `SocialVec(...)` raises `socialvec.exceptions.SocialVecError`; an unknown `model_name` raises `socialvec.exceptions.UnknownModelError` (a `ValueError`).
 
 ```python
 from socialvec.socialvec import SocialVec
@@ -499,7 +512,7 @@ sv.get_similar(sports_ids)
 
 ## Initialization
 
-SocialVecClassifier is part of the socialvec package, so no additional installation is needed, however you need to initiate it separately after creating the SocialVec object.
+SocialVecClassifier is part of the socialvec package, but it needs TensorFlow, which is installed with the `classifier` extra (`pip install "socialvec[classifier]"`). You need to initiate it separately after creating the SocialVec object.
 
 The classifiers were trained on the `"2020c"` model, so create the SocialVec object with that model. Calling `init_classifier()` on another model raises an error.
 
