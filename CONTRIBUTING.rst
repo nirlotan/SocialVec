@@ -64,11 +64,12 @@ Ready to contribute? Here's how to set up `socialvec` for local development.
 
     $ git clone git@github.com:your_name_here/socialvec.git
 
-3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
+3. Install your local copy and the development tools into a virtual environment::
 
-    $ mkvirtualenv socialvec
     $ cd socialvec/
-    $ python setup.py develop
+    $ python -m venv .venv
+    $ source .venv/bin/activate      # on Windows: .venv\Scriptsctivate
+    $ pip install -r requirements_dev.txt -e ".[classifier,api]"
 
 4. Create a branch for local development::
 
@@ -80,10 +81,11 @@ Ready to contribute? Here's how to set up `socialvec` for local development.
    tests, including testing other Python versions with tox::
 
     $ flake8 socialvec tests
-    $ python setup.py test or pytest
+    $ pytest
     $ tox
 
-   To get flake8 and tox, just pip install them into your virtualenv.
+   The first test run downloads the models (about 150 MB each) into
+   ``~/.cache/socialvec``; set ``SOCIALVEC_HOME`` to use another folder.
 
 6. Commit your changes and push your branch to GitHub::
 
@@ -101,18 +103,16 @@ Before you submit a pull request, check that it meets these guidelines:
 1. The pull request should include tests.
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
-   feature to the list in README.rst.
-3. The pull request should work for Python 3.5, 3.6, 3.7 and 3.8, and for PyPy. Check
-   https://travis-ci.com/nirlotan/socialvec/pull_requests
-   and make sure that the tests pass for all supported Python versions.
+   feature to README.md.
+3. The pull request should work for Python 3.10 to 3.13. The GitHub Actions
+   tests run on every pull request; make sure they pass.
 
 Tips
 ----
 
 To run a subset of tests::
 
-
-    $ python -m unittest tests.test_socialvec
+    $ pytest tests/test_cli.py
 
 Deploying
 ---------
@@ -125,4 +125,7 @@ $ bump2version patch # possible: major / minor / patch
 $ git push
 $ git push --tags
 
-Travis will then deploy to PyPI if tests pass.
+Then create a GitHub release for the new tag. The ``Publish`` GitHub Actions
+workflow builds the package and uploads it to PyPI (using PyPI trusted
+publishing, so no token is stored anywhere). To upload by hand instead, run
+``make release``.

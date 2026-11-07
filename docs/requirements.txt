@@ -1,0 +1,3 @@
+Sphinx>=7.0
+myst-parser>=3.0
+-e .

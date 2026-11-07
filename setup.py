@@ -2,17 +2,13 @@
 
 """The setup script."""
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
-with open('README.rst') as readme_file:
+with open('README.md', encoding='utf-8') as readme_file:
     readme = readme_file.read()
-
-with open('HISTORY.rst') as history_file:
-    history = history_file.read()
 
 # Keep requirements.txt in sync with these.
 requirements = ['click>=8.1.3',
-                'setuptools>=60.2.0',
                 'pandas>=1.5.0',
                 'numpy>=1.23.3',
                 'fastparquet>=0.8.3',
@@ -30,44 +26,50 @@ extras_requirements = {
     'api': ['flask', 'flask-cors'],
 }
 
-test_requirements = ['pytest']
 
 setup(
     author="Nir Lotan",
     author_email='nir.lotan@gmail.com',
-    python_requires='>=3.9',
+    python_requires='>=3.10',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
+        'Intended Audience :: Science/Research',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
+        'Topic :: Scientific/Engineering :: Artificial Intelligence',
+        'Topic :: Sociology',
     ],
-    description="SocialVec is a framework of Social Embeddings for eliciting social world knowledge from social networks.",
-    long_description=readme + '\n\n' + history,
-    long_description_content_type='text/x-rst',
+    description="Pre-trained social embeddings of popular Twitter accounts, for eliciting social world knowledge.",
+    long_description=readme,
+    long_description_content_type='text/markdown',
     entry_points={
         'console_scripts': [
-            'socialvec=socialvec.cli:main',
+            'socialvec=socialvec.cli:run',
         ],
     },
     install_requires=requirements,
     extras_require=extras_requirements,
-    license="MIT license",
-    # long_description=readme + '\n\n' + history,
+    license="MIT",
+    license_files=["LICENSE"],
     include_package_data=True,
-    keywords='socialvec',
+    keywords=['socialvec', 'embeddings', 'social network', 'twitter', 'knowledge', 'word2vec'],
     name='socialvec',
-    packages=find_packages(include=['socialvec', 'socialvec.*']),
+    # socialvec.models only holds the classifier .h5 files.
+    packages=['socialvec', 'socialvec.models'],
     # The embedding models and metadata are downloaded on first use, not shipped in the package.
-    package_data={'socialvec': ['config.yaml', 'models/*.h5']},
-    test_suite='tests',
-    tests_require=test_requirements,
-    url='https://github.com/nirlotan/socialvec',
-    version='0.1.7.1',
+    package_data={'socialvec': ['config.yaml'], 'socialvec.models': ['*.h5']},
+    url='https://github.com/nirlotan/SocialVec',
+    project_urls={
+        'Paper': 'https://doi.org/10.1371/journal.pone.0283700',
+        'Source': 'https://github.com/nirlotan/SocialVec',
+        'Issues': 'https://github.com/nirlotan/SocialVec/issues',
+        'Changelog': 'https://github.com/nirlotan/SocialVec/blob/master/HISTORY.rst',
+    },
+    version='0.2.0',
     zip_safe=False,
 )
