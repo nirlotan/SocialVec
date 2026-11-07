@@ -42,7 +42,7 @@ History
 --------------------
 * Add pypi documentation
 
-0.2.0 (2026-11-06)
+0.2.0 (2026-11-07)
 ------------------
 
 Highlights: many lookup bugs fixed, safer and cached downloads, optional TensorFlow
