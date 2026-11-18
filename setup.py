@@ -7,6 +7,12 @@ from setuptools import setup
 with open('README.md', encoding='utf-8') as readme_file:
     readme = readme_file.read()
 
+# PyPI cannot resolve paths inside the repository, so point the README figures at GitHub.
+readme = readme.replace(
+    'src="docs/images/',
+    'src="https://raw.githubusercontent.com/nirlotan/SocialVec/master/docs/images/',
+)
+
 # Keep requirements.txt in sync with these.
 requirements = ['click>=8.1.3',
                 'pandas>=1.5.0',
