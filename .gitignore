@@ -147,3 +147,9 @@ socialvec/.DS_Store
 .DS_Store
 .DS_Store
 socialvec/.DS_Store
+# AISG Developer Tools — extension-managed files
+.tokensave/
+.mcp.json*
+.vscode/mcp.json*
+.claude/settings*.json*
+.claude/rules/tokensave.md*
